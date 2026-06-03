@@ -391,6 +391,36 @@ function showToast(pesan) {
 
 // ── Init ──────────────────────────────────────────────────────
 $(document).ready(function() {
+
+    // Proses pesanan kustom dari sessionStorage (redirect dari landing page)
+    let kustom = sessionStorage.getItem('pesan_kustom');
+    if (kustom) {
+        try {
+            let k = JSON.parse(kustom);
+            sessionStorage.removeItem('pesan_kustom');
+            $.post('/konveksi/api/kustom.php', {
+                action: 'submit',
+                jenis: k.jenis,
+                ukuran: k.ukuran,
+                jumlah: k.jumlah,
+                catatan: k.catatan,
+                estimasi: k.estimasi,
+                jenis_pembayaran: 'dp'
+            }, function(res) {
+                if (res.success) {
+                    alert('✅ Pesanan kustom Anda berhasil dikirim!\nID Transaksi: #' + res
+                        .id_transaksi +
+                        '\n\nAdmin akan menghubungi Anda untuk konfirmasi harga sebelum pembayaran.'
+                        );
+                } else {
+                    alert('Gagal mengirim pesanan kustom: ' + res.error);
+                }
+            }, 'json');
+        } catch (e) {
+            sessionStorage.removeItem('pesan_kustom');
+        }
+    }
+
     loadProduk();
     $('#searchProduk').on('keyup', loadProduk);
     $('#filterJenis').on('change', loadProduk);

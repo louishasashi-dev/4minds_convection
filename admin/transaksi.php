@@ -35,6 +35,7 @@ require_once '../config/db.php';
                     <option value="jahit_satuan">Jahit Satuan</option>
                     <option value="pakaian_jadi">Pakaian Jadi</option>
                     <option value="konveksi">Konveksi</option>
+                    <option value="kustom">Kustom</option>
                 </select>
             </div>
         </div>
@@ -177,6 +178,7 @@ $(document).ready(function() {
                     <td>${t.tanggal_transaksi.substring(0,10)}</td>
                     <td>
                         <button class="btn btn-sm btn-info" onclick="lihatDetail(${t.id_transaksi})"><i class="bi bi-eye"></i></button>
+                        ${t.jenis_transaksi === 'kustom' && t.total_harga == 0 ? `<button class="btn btn-sm btn-warning" onclick="setHargaKustom(${t.id_transaksi})" title="Set Harga"><i class="bi bi-tag"></i></button>` : ''}
                         <button class="btn btn-sm btn-success" onclick="updateStatus(${t.id_transaksi})"><i class="bi bi-check2-circle"></i></button>
                     </td>
                 </tr>`);
@@ -240,8 +242,10 @@ function lihatDetail(id) {
         let html =
             '<table class="table table-sm"><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead><tbody>';
         data.forEach(d => {
+            let namaProduk = d.nama_produk ||
+                '<span class="badge bg-warning text-dark">Pesanan Kustom</span>';
             html +=
-                `<tr><td>${d.nama_produk}</td><td>${d.jumlah}</td><td>Rp${parseInt(d.harga_satuan).toLocaleString('id-ID')}</td><td>Rp${parseInt(d.subtotal).toLocaleString('id-ID')}</td></tr>`;
+                `<tr><td>${namaProduk}</td><td>${d.jumlah}</td><td>Rp${parseInt(d.harga_satuan).toLocaleString('id-ID')}</td><td>Rp${parseInt(d.subtotal).toLocaleString('id-ID')}</td></tr>`;
         });
         html += '</tbody></table>';
         $('#detailContent').html(html);
@@ -260,6 +264,26 @@ function updateStatus(id) {
         if (res.success) {
             alert('Status diperbarui');
             location.reload();
+        }
+    }, 'json');
+}
+
+function setHargaKustom(id) {
+    let harga = prompt('Masukkan total harga untuk pesanan kustom ini (angka tanpa titik/koma):');
+    if (!harga || isNaN(harga)) return;
+    let jp = prompt('Jenis pembayaran? Ketik: dp / lunas / cod');
+    if (!jp) return;
+    $.post('/konveksi/api/kustom.php', {
+        action: 'set_harga',
+        id_transaksi: id,
+        total_harga: harga,
+        jenis_pembayaran: jp
+    }, function(res) {
+        if (res.success) {
+            alert('Harga berhasil ditetapkan. Pelanggan kini bisa melakukan pelunasan.');
+            location.reload();
+        } else {
+            alert('Error: ' + res.error);
         }
     }, 'json');
 }

@@ -9,7 +9,7 @@ if (isset($_SESSION['user_id'])) {
 require_once 'config/db.php';
 
 // Ambil produk pakaian jadi
-$produk_jadi = $conn->query("SELECT * FROM produk WHERE jenis='pakaian_jadi' ORDER BY created_at DESC LIMIT 8");
+$produk_jadi = $conn->query("SELECT * FROM produk WHERE jenis='pakaian_jadi' ORDER BY created_at DESC LIMIT 50");
 
 // Ambil produk konveksi/jasa
 $produk_konveksi = $conn->query("SELECT * FROM produk WHERE jenis='konveksi' ORDER BY created_at DESC LIMIT 6");
@@ -564,6 +564,31 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
             $('#alertKustom').html('<div class="alert alert-warning">Harap isi semua field yang diperlukan.</div>');
             return;
         }
+
+        <?php if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'pelanggan'): ?>
+        // Sudah login — langsung kirim
+        $.post('/konveksi/api/kustom.php', {
+            action: 'submit',
+            jenis: jenis,
+            ukuran: $('#kustom_ukuran').val(),
+            jumlah: jumlah,
+            catatan: catatan,
+            estimasi: $('#kustom_estimasi').val(),
+            jenis_pembayaran: 'dp'
+        }, function(res) {
+            if (res.success) {
+                $('#alertKustom').html(
+                    '<div class="alert alert-success">✅ Pesanan kustom berhasil dikirim! ID Transaksi: <strong>#' +
+                    res.id_transaksi +
+                    '</strong>. Admin akan menghubungi Anda untuk konfirmasi harga.</div>');
+                $('#kustom_jenis, #kustom_catatan, #kustom_estimasi').val('');
+                $('#kustom_jumlah').val(1);
+            } else {
+                $('#alertKustom').html('<div class="alert alert-danger">Error: ' + res.error + '</div>');
+            }
+        }, 'json');
+        <?php else: ?>
+        // Belum login — simpan ke sessionStorage, arahkan ke login
         sessionStorage.setItem('pesan_kustom', JSON.stringify({
             jenis,
             ukuran: $('#kustom_ukuran').val(),
@@ -574,6 +599,7 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
         $('#btnLoginModal').attr('href', '/konveksi/auth/login.php?redirect=kustom');
         $('#pesanModalLogin').text('Login atau daftar dulu untuk melanjutkan pemesanan kustom.');
         new bootstrap.Modal(document.getElementById('modalLogin')).show();
+        <?php endif; ?>
     }
     </script>
 </body>
