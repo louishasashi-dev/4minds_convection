@@ -35,7 +35,6 @@ require_once '../config/db.php';
                     <option value="jahit_satuan">Jahit Satuan</option>
                     <option value="pakaian_jadi">Pakaian Jadi</option>
                     <option value="konveksi">Konveksi</option>
-                    <option value="kustom">Kustom</option>
                 </select>
             </div>
         </div>
@@ -50,6 +49,7 @@ require_once '../config/db.php';
                     <th>Pembayaran</th>
                     <th>Status</th>
                     <th>Tanggal</th>
+                    <th>Deskripsi</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -176,6 +176,7 @@ $(document).ready(function() {
                     <td>${t.jenis_pembayaran}</td>
                     <td><span class="badge bg-${badgeClass}">${t.status}</span></td>
                     <td>${t.tanggal_transaksi.substring(0,10)}</td>
+                    <td>${t.deskripsi ? '<span title="'+t.deskripsi+'">'+t.deskripsi.substring(0,30)+(t.deskripsi.length>30?'...':'')+'</span>' : '-'}</td>
                     <td>
                         <button class="btn btn-sm btn-info" onclick="lihatDetail(${t.id_transaksi})"><i class="bi bi-eye"></i></button>
                         ${t.jenis_transaksi === 'kustom' && t.total_harga == 0 ? `<button class="btn btn-sm btn-warning" onclick="setHargaKustom(${t.id_transaksi})" title="Set Harga"><i class="bi bi-tag"></i></button>` : ''}
@@ -239,15 +240,40 @@ $(document).ready(function() {
 
 function lihatDetail(id) {
     $.get('/konveksi/api/transaksi.php?action=detail&id=' + id, function(data) {
-        let html =
-            '<table class="table table-sm"><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead><tbody>';
-        data.forEach(d => {
-            let namaProduk = d.nama_produk ||
-                '<span class="badge bg-warning text-dark">Pesanan Kustom</span>';
+        let html = '';
+
+        // Jika jahit satuan — tampilkan info kustom
+        if (data.info) {
+            html += `<div class="alert alert-info mb-3">
+                <strong>✂️ Pesanan Jahit Satuan</strong><br>
+                <strong>Jenis Pakaian:</strong> ${data.info.jenis_pakaian || '-'}<br>
+                <strong>Ukuran:</strong> ${data.info.ukuran || '-'}<br>
+                <strong>Catatan:</strong> ${data.info.catatan || '-'}<br>
+                <strong>Estimasi Selesai:</strong> ${data.info.tanggal_selesai ? data.info.tanggal_selesai.substring(0,10) : '-'}<br>
+                <strong>Jumlah:</strong> ${data.info.jumlah} pcs<br>
+                <span class="text-warning fw-bold">⏳ Harga akan dikonfirmasi oleh admin.</span>
+            </div>`;
+        }
+
+        // Tabel produk
+        let items = data.items || data;
+        let adaProduk = items.length > 0 && items[0].nama_produk;
+        if (adaProduk) {
             html +=
-                `<tr><td>${namaProduk}</td><td>${d.jumlah}</td><td>Rp${parseInt(d.harga_satuan).toLocaleString('id-ID')}</td><td>Rp${parseInt(d.subtotal).toLocaleString('id-ID')}</td></tr>`;
-        });
-        html += '</tbody></table>';
+                '<table class="table table-sm"><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead><tbody>';
+            items.forEach(d => {
+                html += `<tr>
+                    <td>${d.nama_produk}</td>
+                    <td>${d.jumlah}</td>
+                    <td>Rp ${parseInt(d.harga_satuan).toLocaleString('id-ID')}</td>
+                    <td>Rp ${parseInt(d.subtotal).toLocaleString('id-ID')}</td>
+                </tr>`;
+            });
+            html += '</tbody></table>';
+        }
+
+        if (!html) html = '<p class="text-muted">Tidak ada detail tersedia.</p>';
+
         $('#detailContent').html(html);
         $('#modalDetail').modal('show');
     }, 'json');

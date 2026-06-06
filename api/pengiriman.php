@@ -24,6 +24,7 @@ switch ($action) {
                     FROM transaksi t
                     JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
                     WHERE t.status IN ('lunas','diproses','selesai','dikirim')
+                    AND t.jenis_transaksi != 'jahit_satuan'
                     AND t.id_transaksi NOT IN (SELECT id_transaksi FROM pengiriman)
 
                     ORDER BY tanggal_kirim DESC";

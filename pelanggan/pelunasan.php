@@ -14,8 +14,8 @@ if ($_SESSION['role'] !== 'pelanggan') {
 
         <div class="alert alert-info">
             <i class="bi bi-info-circle"></i>
-            Halaman ini menampilkan tagihan yang belum terkonfirmasi. Upload bukti transfer untuk mempercepat
-            konfirmasi.
+            Halaman ini menampilkan seluruh riwayat pembayaran Anda. Upload bukti transfer untuk tagihan yang masih
+            <strong>menunggu</strong> konfirmasi.
         </div>
 
         <div class="card">
@@ -26,6 +26,7 @@ if ($_SESSION['role'] !== 'pelanggan') {
                             <th>#</th>
                             <th>Transaksi</th>
                             <th>Jenis</th>
+                            <th>Keterangan</th>
                             <th>Total Transaksi</th>
                             <th>Jumlah Bayar</th>
                             <th>Metode</th>
@@ -36,7 +37,7 @@ if ($_SESSION['role'] !== 'pelanggan') {
                     </thead>
                     <tbody id="bodyPelunasan">
                         <tr>
-                            <td colspan="9" class="text-center py-4">
+                            <td colspan="10" class="text-center py-4">
                                 <div class="spinner-border text-primary"></div>
                             </td>
                         </tr>
@@ -133,14 +134,23 @@ $(document).ready(function() {
     });
 });
 
+function getKeterangan(p) {
+    if (p.jenis_pembayaran !== 'dp') return '-';
+    if (parseInt(p.urutan_bayar) === 1) {
+        return '<span class="badge bg-info text-dark">Pembayaran DP 50%</span>';
+    } else {
+        return '<span class="badge bg-secondary">Pelunasan sisa DP (50% sebelumnya telah dibayarkan)</span>';
+    }
+}
+
 function loadPelunasan() {
     $.get('/konveksi/api/pelunasan.php?action=list', function(data) {
         let tbody = $('#bodyPelunasan');
         tbody.empty();
         if (data.length === 0) {
             tbody.html(
-                '<tr><td colspan="9" class="text-center text-muted py-4">Tidak ada tagihan yang perlu dibayar.</td></tr>'
-                );
+                '<tr><td colspan="10" class="text-center text-muted py-4">Tidak ada tagihan yang perlu dibayar.</td></tr>'
+            );
             return;
         }
         data.forEach((p, i) => {
@@ -161,6 +171,7 @@ function loadPelunasan() {
                     <td>${i + 1}</td>
                     <td>#${p.id_transaksi}</td>
                     <td>${p.jenis_transaksi.replace(/_/g,' ')}</td>
+                    <td>${getKeterangan(p)}</td>
                     <td>Rp ${parseInt(p.total_harga).toLocaleString('id-ID')}</td>
                     <td>Rp ${parseInt(p.jumlah_bayar).toLocaleString('id-ID')}</td>
                     <td>${p.metode}</td>

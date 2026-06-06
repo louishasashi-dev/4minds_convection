@@ -259,23 +259,38 @@ function lihatDetail(id) {
             return;
         }
 
-        // Produk
-        let produkHtml = '<p class="text-muted">Tidak ada item.</p>';
-        if (data.length > 0) {
-            produkHtml = '<table class="table table-sm table-bordered">' +
-                '<thead class="table-light"><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead><tbody>';
-            data.forEach(d => {
-                produkHtml += `<tr>
-                    <td>${d.nama_produk}</td>
-                    <td>${d.jumlah}</td>
-                    <td>Rp ${parseInt(d.harga_satuan).toLocaleString('id-ID')}</td>
-                    <td>Rp ${parseInt(d.subtotal).toLocaleString('id-ID')}</td>
-                </tr>`;
-            });
-            produkHtml += '</tbody></table>';
+        let html = '';
+
+        // Jika jahit satuan — tampilkan info kustom
+        if (data.info) {
+            html += `<div class="alert alert-info mb-3">
+            <strong>✂️ Pesanan Jahit Satuan</strong><br>
+            <strong>Jenis Pakaian:</strong> ${data.info.jenis_pakaian || '-'}<br>
+            <strong>Ukuran:</strong> ${data.info.ukuran || '-'}<br>
+            <strong>Catatan:</strong> ${data.info.catatan || '-'}<br>
+            <strong>Estimasi Selesai:</strong> ${data.info.tanggal_selesai ? data.info.tanggal_selesai.substring(0,10) : '-'}<br>
+            <strong>Jumlah:</strong> ${data.info.jumlah} pcs<br>
+            <span class="text-warning fw-bold">⏳ Harga akan dikonfirmasi oleh admin.</span>
+        </div>`;
         }
 
-        $('#isiDetail').html(produkHtml);
+        // Tabel produk (jika ada produk nyata)
+        if (data.items && data.items.length > 0 && data.items[0].nama_produk) {
+            html += '<table class="table table-sm table-bordered">' +
+                '<thead class="table-light"><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead><tbody>';
+            data.items.forEach(d => {
+                html += `<tr>
+                <td>${d.nama_produk}</td>
+                <td>${d.jumlah}</td>
+                <td>Rp ${parseInt(d.harga_satuan).toLocaleString('id-ID')}</td>
+                <td>Rp ${parseInt(d.subtotal).toLocaleString('id-ID')}</td>
+            </tr>`;
+            });
+            html += '</tbody></table>';
+        }
+
+        if (!html) html = '<p class="text-muted">Tidak ada detail tersedia.</p>';
+        $('#isiDetail').html(html);
     }, 'json');
 }
 

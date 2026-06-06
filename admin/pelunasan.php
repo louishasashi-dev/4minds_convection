@@ -32,6 +32,7 @@ if ($_SESSION['role'] !== 'admin') {
                             <th>Pelanggan</th>
                             <th>Transaksi</th>
                             <th>Jenis</th>
+                            <th>Keterangan</th>
                             <th>Total Transaksi</th>
                             <th>Jumlah Bayar</th>
                             <th>Metode</th>
@@ -43,7 +44,7 @@ if ($_SESSION['role'] !== 'admin') {
                     </thead>
                     <tbody id="bodyPelunasan">
                         <tr>
-                            <td colspan="11" class="text-center py-4">
+                            <td colspan="12" class="text-center py-4">
                                 <div class="spinner-border text-primary"></div>
                             </td>
                         </tr>
@@ -51,7 +52,6 @@ if ($_SESSION['role'] !== 'admin') {
                 </table>
             </div>
         </div>
-
     </div>
 </div>
 
@@ -71,6 +71,15 @@ function load() {
     }, 'json');
 }
 
+function getKeterangan(p) {
+    if (p.jenis_pembayaran !== 'dp') return '-';
+    if (parseInt(p.urutan_bayar) === 1) {
+        return '<span class="badge bg-info text-dark">Pembayaran DP 50%</span>';
+    } else {
+        return '<span class="badge bg-success">Pelunasan sisa DP 50%</span>';
+    }
+}
+
 function render() {
     let st = $('#filterStatus').val();
     let tbody = $('#bodyPelunasan');
@@ -78,7 +87,7 @@ function render() {
 
     let filtered = allData.filter(d => !st || d.status === st);
     if (filtered.length === 0) {
-        tbody.html('<tr><td colspan="11" class="text-center text-muted py-4">Tidak ada data.</td></tr>');
+        tbody.html('<tr><td colspan="12" class="text-center text-muted py-4">Tidak ada data.</td></tr>');
         return;
     }
 
@@ -105,6 +114,7 @@ function render() {
                 <td>${p.nama_pelanggan}</td>
                 <td>#${p.id_transaksi}</td>
                 <td>${p.jenis_transaksi.replace(/_/g,' ')}</td>
+                <td>${getKeterangan(p)}</td>
                 <td>Rp ${parseInt(p.total_harga).toLocaleString('id-ID')}</td>
                 <td>Rp ${parseInt(p.jumlah_bayar).toLocaleString('id-ID')}</td>
                 <td>${p.metode}</td>

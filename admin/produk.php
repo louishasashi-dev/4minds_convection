@@ -223,7 +223,7 @@ $(document).ready(function() {
                 grid.append(`
                     <div class="col-md-3 col-6">
                         <div class="card h-100 shadow-sm">
-                            <img src="${img}" class="card-img-top" style="height:160px;object-fit:cover">
+                            <img src="${img}" class="card-img-top" style="height:220px;object-fit:cover">
                             <div class="card-body p-2">
                                 <span class="badge bg-${jBadge} mb-1" style="font-size:.7rem">${p.jenis.replace(/_/g,' ')}</span>
                                 <h6 class="card-title mb-1" style="font-size:.9rem">${p.nama_produk}</h6>
@@ -368,7 +368,7 @@ function lihatDetail(id) {
         let img = p.gambar ? '/konveksi/assets/uploads/' + p.gambar :
             'https://via.placeholder.com/400x200?text=No+Image';
         $('#isiDetail').html(`
-            <img src="${img}" class="img-fluid rounded mb-3" style="width:100%;max-height:200px;object-fit:cover">
+            <img src="${img}" class="img-fluid rounded mb-3" style="width:100%;max-height:250px;object-fit:cover">
             <table class="table table-sm table-bordered">
                 <tr><th>Nama</th><td>${p.nama_produk}</td></tr>
                 <tr><th>Kategori</th><td>${p.kategori || '-'}</td></tr>

@@ -32,7 +32,7 @@ switch ($action) {
         $conn->query("INSERT INTO transaksi 
             (id_pelanggan, jenis_transaksi, total_harga, diskon_total, jenis_pembayaran, tanggal_selesai, catatan_kustom, ukuran_kustom, status)
             VALUES 
-            ($id_pelanggan, 'kustom', $total, 0, '$jenis_pembayaran', $tgl_q, '$catatan', '$ukuran', 'pending')");
+            ($id_pelanggan, 'jahit satuan', $total, 0, '$jenis_pembayaran', $tgl_q, '$catatan', '$ukuran', 'pending')");
 
         $id_transaksi = $conn->insert_id;
 

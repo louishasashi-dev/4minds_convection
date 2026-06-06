@@ -201,7 +201,7 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
     }
 
     .produk-card img {
-        height: 200px;
+        height: 250px;
         object-fit: cover;
     }
 
@@ -297,7 +297,7 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item"><a class="nav-link" href="#pakaian-jadi">Pakaian Jadi</a></li>
                     <li class="nav-item"><a class="nav-link" href="#jasa-konveksi">Jasa Konveksi</a></li>
-                    <li class="nav-item"><a class="nav-link" href="#kustom">Pakaian Kustom</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#jahit-satuan">Jahit Satuan</a></li>
                 </ul>
                 <div class="d-flex gap-2">
                     <a href="/konveksi/auth/login.php" class="btn btn-daftar">LOGIN</a>
@@ -318,7 +318,7 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
                 Anda.</p>
             <div class="mt-4 d-flex justify-content-center gap-3 flex-wrap">
                 <a href="#pakaian-jadi" class="btn btn-cta">Lihat Produk</a>
-                <a href="#kustom" class="btn btn-outline-light">Pesan Kustom</a>
+                <a href="#jahit-satuan" class="btn btn-outline-light">Jahit Satuan</a>
             </div>
         </div>
     </div>
@@ -392,14 +392,13 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
         </div>
     </section>
 
-    <!-- SECTION: FORM KUSTOM (JAHIT SATUAN) -->
-    <section id="kustom">
+    <section id="jahit-satuan">
         <div class="container">
             <div class="row align-items-center">
                 <div class="col-md-5 mb-4 mb-md-0">
-                    <h2 class="section-title">✂️ Pakaian Kustom</h2>
-                    <p class="text-muted">Ingin baju sesuai ukuran dan model Anda sendiri? Isi form berikut dan kami
-                        akan membuatkannya untuk Anda.</p>
+                    <h2 class="section-title">✂️ Jahit Satuan</h2>
+                    <p class="text-muted">Ingin baju sesuai ukuran dan model Anda sendiri? Kami siap membuatkannya
+                        khusus untuk Anda.</p>
                     <ul class="text-muted">
                         <li>Pilih model & ukuran bebas</li>
                         <li>Bahan pilihan sendiri</li>
@@ -409,57 +408,20 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
                 </div>
                 <div class="col-md-7">
                     <div class="card shadow">
-                        <div class="card-body p-4">
-                            <h5 class="mb-3">Form Pemesanan Kustom</h5>
-                            <div id="alertKustom"></div>
-                            <div class="mb-3">
-                                <label class="form-label">Jenis Pakaian</label>
-                                <select id="kustom_jenis" class="form-select">
-                                    <option value="">-- Pilih Jenis --</option>
-                                    <option value="kaos">Kaos</option>
-                                    <option value="kemeja">Kemeja</option>
-                                    <option value="jaket">Jaket</option>
-                                    <option value="celana">Celana</option>
-                                    <option value="gamis">Gamis</option>
-                                    <option value="lainnya">Lainnya</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Ukuran / Referensi Model</label>
-                                <select id="kustom_ukuran" class="form-select">
-                                    <option value="">-- Pilih Ukuran --</option>
-                                    <?php
-                                $ukuran_list->data_seek(0);
-                                while ($u = $ukuran_list->fetch_assoc()):
-                                ?>
-                                    <option value="<?= $u['id_ukuran_model'] ?>">
-                                        <?= htmlspecialchars($u['jenis'] . ' - ' . $u['ukuran']) ?>
-                                    </option>
-                                    <?php endwhile; ?>
-                                    <option value="custom">Ukuran Sendiri (isi di catatan)</option>
-                                </select>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Jumlah Pcs</label>
-                                <input type="number" id="kustom_jumlah" class="form-control" min="1" value="1"
-                                    placeholder="Masukkan jumlah">
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Keterangan / Catatan</label>
-                                <textarea id="kustom_catatan" class="form-control" rows="3"
-                                    placeholder="Contoh: Ukuran dada 100cm, panjang 70cm, warna navy, bahan cotton combed 30s..."></textarea>
-                            </div>
-                            <div class="mb-3">
-                                <label class="form-label">Estimasi Selesai</label>
-                                <input type="date" id="kustom_estimasi" class="form-control"
-                                    min="<?= date('Y-m-d', strtotime('+7 days')) ?>">
-                            </div>
-                            <button class="btn w-100 btn-cta" onclick="submitKustom()">
-                                ✂️ Kirim Permintaan Kustom
-                            </button>
-                            <p class="text-muted small text-center mt-2">
-                                Anda akan diminta login/daftar untuk melanjutkan pemesanan
+                        <div class="card-body p-4 text-center">
+                            <div class="fs-1 mb-3">✂️</div>
+                            <h5 class="mb-3">Pesan Jahit Satuan</h5>
+                            <p class="text-muted mb-4">
+                                Untuk memesan jahit satuan, silakan
+                                <a href="/konveksi/auth/login.php"
+                                    style="color:#D4AF37;font-weight:600;text-decoration:none">Login</a>
+                                terlebih dahulu. Jika belum punya akun, silakan
+                                <a href="/konveksi/auth/register.php"
+                                    style="color:#2c7a2c;font-weight:600;text-decoration:none">Daftar</a>
+                                sekarang.
                             </p>
+                            <a href="/konveksi/auth/login.php" class="btn btn-cta me-2">Login</a>
+                            <a href="/konveksi/auth/register.php" class="btn btn-outline-light">Daftar</a>
                         </div>
                     </div>
                 </div>
@@ -556,51 +518,41 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
         }, 'json');
     }
 
-    function submitKustom() {
-        let jenis = $('#kustom_jenis').val();
-        let catatan = $('#kustom_catatan').val();
-        let jumlah = $('#kustom_jumlah').val();
-        if (!jenis || !catatan || !jumlah) {
-            $('#alertKustom').html('<div class="alert alert-warning">Harap isi semua field yang diperlukan.</div>');
-            return;
+    <?php if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'pelanggan'): ?>
+    // Sudah login — langsung kirim
+    $.post('/konveksi/api/kustom.php', {
+        action: 'submit',
+        jenis: jenis,
+        ukuran: $('#kustom_ukuran').val(),
+        jumlah: jumlah,
+        catatan: catatan,
+        estimasi: $('#kustom_estimasi').val(),
+        jenis_pembayaran: 'dp'
+    }, function(res) {
+        if (res.success) {
+            $('#alertKustom').html(
+                '<div class="alert alert-success">✅ Pesanan kustom berhasil dikirim! ID Transaksi: <strong>#' +
+                res.id_transaksi +
+                '</strong>. Admin akan menghubungi Anda untuk konfirmasi harga.</div>');
+            $('#kustom_jenis, #kustom_catatan, #kustom_estimasi').val('');
+            $('#kustom_jumlah').val(1);
+        } else {
+            $('#alertKustom').html('<div class="alert alert-danger">Error: ' + res.error + '</div>');
         }
-
-        <?php if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'pelanggan'): ?>
-        // Sudah login — langsung kirim
-        $.post('/konveksi/api/kustom.php', {
-            action: 'submit',
-            jenis: jenis,
-            ukuran: $('#kustom_ukuran').val(),
-            jumlah: jumlah,
-            catatan: catatan,
-            estimasi: $('#kustom_estimasi').val(),
-            jenis_pembayaran: 'dp'
-        }, function(res) {
-            if (res.success) {
-                $('#alertKustom').html(
-                    '<div class="alert alert-success">✅ Pesanan kustom berhasil dikirim! ID Transaksi: <strong>#' +
-                    res.id_transaksi +
-                    '</strong>. Admin akan menghubungi Anda untuk konfirmasi harga.</div>');
-                $('#kustom_jenis, #kustom_catatan, #kustom_estimasi').val('');
-                $('#kustom_jumlah').val(1);
-            } else {
-                $('#alertKustom').html('<div class="alert alert-danger">Error: ' + res.error + '</div>');
-            }
-        }, 'json');
-        <?php else: ?>
-        // Belum login — simpan ke sessionStorage, arahkan ke login
-        sessionStorage.setItem('pesan_kustom', JSON.stringify({
-            jenis,
-            ukuran: $('#kustom_ukuran').val(),
-            jumlah,
-            catatan,
-            estimasi: $('#kustom_estimasi').val()
-        }));
-        $('#btnLoginModal').attr('href', '/konveksi/auth/login.php?redirect=kustom');
-        $('#pesanModalLogin').text('Login atau daftar dulu untuk melanjutkan pemesanan kustom.');
-        new bootstrap.Modal(document.getElementById('modalLogin')).show();
-        <?php endif; ?>
-    }
+    }, 'json');
+    <?php else: ?>
+    // Belum login — simpan ke sessionStorage, arahkan ke login
+    sessionStorage.setItem('pesan_kustom', JSON.stringify({
+        jenis,
+        ukuran: $('#kustom_ukuran').val(),
+        jumlah,
+        catatan,
+        estimasi: $('#kustom_estimasi').val()
+    }));
+    $('#btnLoginModal').attr('href', '/konveksi/auth/login.php?redirect=kustom');
+    $('#pesanModalLogin').text('Login atau daftar dulu untuk melanjutkan pemesanan kustom.');
+    new bootstrap.Modal(document.getElementById('modalLogin')).show();
+    <?php endif; ?>
     </script>
 </body>
 

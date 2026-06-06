@@ -28,22 +28,66 @@ switch ($action) {
         break;
 
     case 'detail':
-        $id  = intval($_GET['id']);
-        $res = $conn->query("SELECT dt.*, pr.nama_produk FROM detail_transaksi dt 
-                             JOIN produk pr ON dt.id_produk = pr.id_produk 
-                             WHERE dt.id_transaksi = $id");
-        $data = [];
-        while ($r = $res->fetch_assoc()) $data[] = $r;
-        echo json_encode($data);
-        break;
+    $id  = intval($_GET['id']);
+
+    // Cek apakah ini transaksi jahit satuan
+    $trx = $conn->query("SELECT jenis_transaksi, catatan_kustom, ukuran_kustom, jenis_pakaian_kustom, tanggal_selesai FROM transaksi WHERE id_transaksi=$id")->fetch_assoc();
+
+    // Ambil items
+    $res = $conn->query("SELECT dt.*, pr.nama_produk FROM detail_transaksi dt 
+                         LEFT JOIN produk pr ON dt.id_produk = pr.id_produk 
+                         WHERE dt.id_transaksi = $id");
+    $items = [];
+    while ($r = $res->fetch_assoc()) $items[] = $r;
+
+    // Jika jahit satuan, sertakan info kustom
+    if ($trx && $trx['jenis_transaksi'] === 'jahit_satuan' && $trx['catatan_kustom']) {
+        $jumlah = isset($items[0]) ? $items[0]['jumlah'] : 1;
+        echo json_encode([
+            'info' => [
+                'jenis_pakaian'   => $trx['jenis_pakaian_kustom'] ?: '-',
+                'ukuran'          => $trx['ukuran_kustom'],
+                'catatan'         => $trx['catatan_kustom'],
+                'tanggal_selesai' => $trx['tanggal_selesai'],
+                'jumlah'          => $jumlah
+            ],
+            'items' => $items
+        ]);
+    } else {
+        echo json_encode(['items' => $items]);
+    }
+    break;
 
     case 'create':
         $id_pelanggan     = intval($_POST['id_pelanggan'] ?? $_SESSION['user_id']);
         $jenis            = $conn->real_escape_string($_POST['jenis_transaksi']);
         $jenis_pembayaran = $conn->real_escape_string($_POST['jenis_pembayaran']);
-        $items            = json_decode($_POST['items'], true); // [{id_produk, jumlah}]
+        $items            = json_decode($_POST['items'], true);
         $tgl_selesai      = $conn->real_escape_string($_POST['tanggal_selesai'] ?? '');
+        $deskripsi        = $conn->real_escape_string($_POST['deskripsi'] ?? '');
 
+        // Upload file desain (hanya untuk konveksi)
+        $file_desain_nama = '';
+        if ($jenis === 'konveksi' && isset($_FILES['file_desain']) && $_FILES['file_desain']['error'] === UPLOAD_ERR_OK) {
+            $allowed_types = ['image/jpeg','image/png','image/gif','image/webp','image/bmp','image/svg+xml','application/pdf'];
+            $file_tmp  = $_FILES['file_desain']['tmp_name'];
+            $file_mime = mime_content_type($file_tmp);
+            $file_size = $_FILES['file_desain']['size'];
+
+            if (!in_array($file_mime, $allowed_types)) {
+                echo json_encode(['error' => 'Format file tidak didukung. Gunakan gambar atau PDF.']);
+                exit;
+            }
+            if ($file_size > 5 * 1024 * 1024) {
+                echo json_encode(['error' => 'Ukuran file maksimal 5 MB.']);
+                exit;
+            }
+
+            $ext              = pathinfo($_FILES['file_desain']['name'], PATHINFO_EXTENSION);
+            $file_desain_nama = 'desain_' . time() . '_' . $id_pelanggan . '.' . strtolower($ext);
+            $upload_dir       = __DIR__ . '/../assets/uploads/';
+            move_uploaded_file($file_tmp, $upload_dir . $file_desain_nama);
+        }
         if (empty($items)) { echo json_encode(['error' => 'Item tidak boleh kosong']); break; }
 
         // Mulai transaksi DB
@@ -81,9 +125,10 @@ switch ($action) {
             }
 
             // Insert transaksi
-            $tgl_q = $tgl_selesai ? "'$tgl_selesai'" : "NULL";
-            $conn->query("INSERT INTO transaksi (id_pelanggan, jenis_transaksi, total_harga, diskon_total, jenis_pembayaran, tanggal_selesai, status)
-                          VALUES ($id_pelanggan, '$jenis', $total, $diskon_total, '$jenis_pembayaran', $tgl_q, 'pending')");
+            $tgl_q        = $tgl_selesai ? "'$tgl_selesai'" : "NULL";
+            $desain_q     = $file_desain_nama ? "'$file_desain_nama'" : "NULL";
+            $conn->query("INSERT INTO transaksi (id_pelanggan, jenis_transaksi, total_harga, diskon_total, jenis_pembayaran, tanggal_selesai, deskripsi, file_desain, status)
+              VALUES ($id_pelanggan, '$jenis', $total, $diskon_total, '$jenis_pembayaran', $tgl_q, '$deskripsi', $desain_q, 'pending')");
             $id_transaksi = $conn->insert_id;
 
             // Insert detail

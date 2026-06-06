@@ -32,7 +32,7 @@ require_once '../config/db.php';
                             <th>#</th>
                             <th>Pelanggan</th>
                             <th>Transaksi</th>
-                            <th>Kurir</th>
+                            <th>Ekspedisi</th>
                             <th>No Resi</th>
                             <th>Tgl Kirim</th>
                             <th>Estimasi</th>

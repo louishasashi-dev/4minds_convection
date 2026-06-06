@@ -22,8 +22,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['user_id']   = $role === 'admin' ? $user['id_admin'] : $user['id_pelanggan'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['role']      = $role;
-        header('Location: ../' . $role . '/dashboard.php');
-        exit;
+        $redirect = $_GET['redirect'] ?? '';
+            if ($role === 'pelanggan' && $redirect === 'jahit') {
+                header('Location: ../pelanggan/produk.php');
+            } else {
+                header('Location: ../' . $role . '/dashboard.php');
+            }
+            exit;
     } else {
         $error = "Email atau password salah.";
     }
@@ -46,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 <?php if (!empty($error)): ?>
                 <div class="alert alert-danger"><?= $error ?></div>
                 <?php endif; ?>
-                <form method="POST">
+                <form method="POST" action="login.php?redirect=<?= htmlspecialchars($_GET['redirect'] ?? '') ?>">
                     <div class="mb-3">
                         <label>Role</label>
                         <select name="role" class="form-select">

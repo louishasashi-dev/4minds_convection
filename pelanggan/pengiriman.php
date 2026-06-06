@@ -19,7 +19,7 @@ if ($_SESSION['role'] !== 'pelanggan') {
                         <tr>
                             <th>#</th>
                             <th>Transaksi</th>
-                            <th>Kurir</th>
+                            <th>Ekspedisi</th>
                             <th>No Resi</th>
                             <th>Tgl Kirim</th>
                             <th>Estimasi Tiba</th>
@@ -50,7 +50,7 @@ $(document).ready(function() {
         if (data.length === 0) {
             tbody.html(
                 '<tr><td colspan="8" class="text-center text-muted py-4">Belum ada data pengiriman.</td></tr>'
-                );
+            );
             return;
         }
         data.forEach((p, i) => {

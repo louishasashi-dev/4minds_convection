@@ -50,7 +50,7 @@ $pengiriman_aktif  = $conn->query("SELECT pg.*, t.jenis_transaksi FROM pengirima
             </div>
             <div class="col-6 col-md-3">
                 <div class="card text-white bg-success text-center p-3">
-                    <div class="small fw-bold">Rp <?= number_format($total_bayar, 0, ',', '.') ?></div>
+                    <div class="fs-2 fw-bold">Rp <?= number_format($total_bayar, 0, ',', '.') ?></div>
                     <div class="small">Total Sudah Dibayar</div>
                 </div>
             </div>

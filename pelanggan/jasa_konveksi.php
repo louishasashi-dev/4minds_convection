@@ -5,15 +5,15 @@ if ($_SESSION['role'] !== 'pelanggan') { header('Location: /konveksi/auth/login.
 <?php require_once '../includes/sidebar_pelanggan.php'; ?>
 <div class="flex-grow-1">
     <div class="topbar">
-        <span>Pakaian Jadi</span>
+        <span>Jasa Konveksi</span>
         <span>👤 <?= htmlspecialchars($_SESSION['user_name']) ?></span>
     </div>
     <div class="main-content">
 
-        <!-- Filter -->
+        <!-- Search -->
         <div class="row mb-3 g-2">
             <div class="col-md-5">
-                <input type="text" id="searchProduk" class="form-control" placeholder="🔍 Cari nama produk...">
+                <input type="text" id="searchProduk" class="form-control" placeholder="🔍 Cari layanan konveksi...">
             </div>
         </div>
 
@@ -63,7 +63,7 @@ if ($_SESSION['role'] !== 'pelanggan') { header('Location: /konveksi/auth/login.
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">🛒 Checkout Pesanan</h5>
+                <h5 class="modal-title">🏭 Checkout Jasa Konveksi</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
@@ -91,12 +91,6 @@ if ($_SESSION['role'] !== 'pelanggan') { header('Location: /konveksi/auth/login.
 
                 <div class="row g-3">
                     <div class="col-md-6">
-                        <label class="form-label">Jenis Transaksi</label>
-                        <select id="co_jenis" class="form-select">
-                            <option value="pakaian_jadi">Pakaian Jadi (beli langsung)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6">
                         <label class="form-label">Jenis Pembayaran</label>
                         <select id="co_pembayaran" class="form-select">
                             <option value="lunas">Bayar Lunas</option>
@@ -107,12 +101,33 @@ if ($_SESSION['role'] !== 'pelanggan') { header('Location: /konveksi/auth/login.
                         <label class="form-label">Deskripsi / Catatan Pesanan <small
                                 class="text-muted">(opsional)</small></label>
                         <textarea id="co_deskripsi" class="form-control" rows="3"
-                            placeholder="Contoh: warna navy, ukuran XL, bahan cotton combed..."></textarea>
+                            placeholder="Contoh: warna navy, sablon dada kiri, bahan drifit..."></textarea>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">Estimasi Tanggal Selesai <small
                                 class="text-muted">(opsional)</small></label>
                         <input type="date" id="co_tgl_selesai" class="form-control">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label">Upload Desain / Referensi
+                            <small class="text-muted">(opsional — gambar atau PDF)</small>
+                        </label>
+                        <input type="file" id="co_file_desain" class="form-control"
+                            accept="image/jpeg,image/png,image/gif,image/webp,image/bmp,image/svg+xml,application/pdf">
+                        <div class="form-text">
+                            Format: JPG, PNG, GIF, WEBP, BMP, SVG, PDF &bull; Maks. <strong>5 MB</strong>
+                        </div>
+                        <div id="previewDesain" class="mt-2 d-none">
+                            <img id="previewDesainImg" src="" alt="Preview" class="img-thumbnail"
+                                style="max-height:150px;">
+                        </div>
+                        <div id="previewDesainPdf" class="mt-2 d-none">
+                            <div class="alert alert-info py-2 mb-0">
+                                <i class="bi bi-file-earmark-pdf-fill text-danger"></i>
+                                <span id="namaPdfDesain"></span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -129,7 +144,7 @@ if ($_SESSION['role'] !== 'pelanggan') { header('Location: /konveksi/auth/login.
     </div>
 </div>
 
-<!-- Toast container -->
+<!-- Toast -->
 <div class="position-fixed bottom-0 end-0 p-3" style="z-index:9999">
     <div id="toastNotif" class="toast align-items-center text-bg-success border-0" role="alert">
         <div class="d-flex">
@@ -144,18 +159,16 @@ if ($_SESSION['role'] !== 'pelanggan') { header('Location: /konveksi/auth/login.
 let keranjang = [];
 let produkAktif = null;
 
-// ── Load produk ───────────────────────────────────────────────
 function loadProduk() {
     let q = $('#searchProduk').val();
-    let jenis = 'pakaian_jadi';
     $('#produkGrid').html('<div class="col-12 text-center py-5"><div class="spinner-border text-primary"></div></div>');
 
-    $.get('/konveksi/api/produk.php?action=list&q=' + encodeURIComponent(q) + '&jenis=' + jenis, function(data) {
+    $.get('/konveksi/api/produk.php?action=list&q=' + encodeURIComponent(q) + '&jenis=konveksi', function(data) {
         let grid = $('#produkGrid');
         grid.empty();
 
         if (data.length === 0) {
-            grid.html('<p class="text-muted col-12 mt-3">Tidak ada produk ditemukan.</p>');
+            grid.html('<p class="text-muted col-12 mt-3">Tidak ada layanan konveksi ditemukan.</p>');
             return;
         }
 
@@ -164,47 +177,37 @@ function loadProduk() {
                 '/konveksi/assets/uploads/' + p.gambar :
                 'https://via.placeholder.com/200x150?text=No+Image';
 
-            let jBadge = p.jenis === 'pakaian_jadi' ? 'success' : p.jenis === 'konveksi' ? 'primary' :
-                'warning';
-
             let stokBadge = parseInt(p.stok) > 0 ?
                 '<span class="badge bg-success">Stok: ' + p.stok + '</span>' :
                 '<span class="badge bg-danger">Stok Habis</span>';
 
             let btnPesan = parseInt(p.stok) > 0 ?
-                '<button class="btn btn-success btn-sm w-100 mt-1" onclick="tambahKeKeranjang(' + p
-                .id_produk + ')"><i class="bi bi-cart-plus"></i> Pesan</button>' :
+                '<button class="btn btn-primary btn-sm w-100 mt-1" onclick="tambahKeKeranjang(' + p
+                .id_produk + ')"><i class="bi bi-cart-plus"></i> Pesan Massal</button>' :
                 '<button class="btn btn-secondary btn-sm w-100 mt-1" disabled>Stok Habis</button>';
 
             grid.append(
                 '<div class="col-md-3 col-sm-6">' +
                 '<div class="card h-100 shadow-sm">' +
                 '<img src="' + img +
-                '" class="card-img-top" style="height:220px;object-fit:cover" ' +
-                'onclick="lihatDetail(' + p.id_produk + ')" role="button">' +
+                '" class="card-img-top" style="height:150px;object-fit:contain;background:#f8f9fa" onclick="lihatDetail(' +
+                p.id_produk + ')" role="button">' +
                 '<div class="card-body d-flex flex-column p-2">' +
-                '<span class="badge bg-' + jBadge + ' mb-1" style="font-size:.7rem">' + p.jenis
-                .replace(/_/g, ' ') + '</span>' +
+                '<span class="badge bg-primary mb-1" style="font-size:.7rem">Konveksi</span>' +
                 '<h6 class="card-title mb-1" style="font-size:.9rem">' + p.nama_produk + '</h6>' +
                 '<p class="fw-bold text-success mb-1">Rp ' + parseInt(p.harga).toLocaleString(
-                    'id-ID') + '</p>' +
+                    'id-ID') + ' <small class="text-muted fw-normal">/ pcs</small></p>' +
                 stokBadge +
                 btnPesan +
                 '<button class="btn btn-outline-secondary btn-sm w-100 mt-1" onclick="lihatDetail(' +
-                p.id_produk + ')">' +
-                '<i class="bi bi-eye"></i> Detail' +
-                '</button>' +
-                '</div>' +
-                '</div>' +
-                '</div>'
+                p.id_produk + ')"><i class="bi bi-eye"></i> Detail</button>' +
+                '</div></div></div>'
             );
         });
     }, 'json');
 }
 
-// ── Keranjang ─────────────────────────────────────────────────
 function tambahKeKeranjang(id_produk) {
-    // Ambil data produk dari API
     $.get('/konveksi/api/produk.php?action=detail_publik&id=' + id_produk, function(p) {
         let idx = keranjang.findIndex(function(k) {
             return k.id_produk == id_produk;
@@ -265,29 +268,23 @@ function renderKeranjangTabel() {
         tbody.append(
             '<tr>' +
             '<td>' + k.nama + '</td>' +
-            '<td>' +
-            '<div class="input-group input-group-sm">' +
+            '<td><div class="input-group input-group-sm">' +
             '<button class="btn btn-outline-secondary" onclick="ubahQty(' + k.id_produk +
             ', -1)">-</button>' +
             '<input type="text" class="form-control text-center" value="' + k.jumlah + '" readonly>' +
             '<button class="btn btn-outline-secondary" onclick="ubahQty(' + k.id_produk +
             ', 1)">+</button>' +
-            '</div>' +
-            '</td>' +
+            '</div></td>' +
             '<td>Rp ' + parseInt(k.harga).toLocaleString('id-ID') + '</td>' +
             '<td>Rp ' + parseInt(sub).toLocaleString('id-ID') + '</td>' +
-            '<td>' +
-            '<button class="btn btn-sm btn-danger" onclick="hapusDariKeranjang(' + k.id_produk + ')">' +
-            '<i class="bi bi-trash"></i>' +
-            '</button>' +
-            '</td>' +
+            '<td><button class="btn btn-sm btn-danger" onclick="hapusDariKeranjang(' + k.id_produk +
+            ')"><i class="bi bi-trash"></i></button></td>' +
             '</tr>'
         );
     });
     $('#totalCheckout').text('Rp ' + total.toLocaleString('id-ID'));
 }
 
-// ── Checkout ──────────────────────────────────────────────────
 function bukaCheckout() {
     if (keranjang.length === 0) {
         alert('Keranjang masih kosong!');
@@ -295,11 +292,23 @@ function bukaCheckout() {
     }
     renderKeranjangTabel();
     $('#alertCheckout').html('');
+    // Reset field upload
+    $('#co_file_desain').val('');
+    $('#previewDesain').addClass('d-none');
+    $('#previewDesainPdf').addClass('d-none');
     new bootstrap.Modal(document.getElementById('modalCheckout')).show();
 }
 
 $('#btnKirimOrder').click(function() {
     if (keranjang.length === 0) return;
+
+    // Validasi ukuran file
+    let fileInput = document.getElementById('co_file_desain');
+    let file = fileInput.files[0];
+    if (file && file.size > 5 * 1024 * 1024) {
+        $('#alertCheckout').html('<div class="alert alert-danger">Ukuran file maksimal 5 MB.</div>');
+        return;
+    }
 
     let items = keranjang.map(function(k) {
         return {
@@ -311,33 +320,50 @@ $('#btnKirimOrder').click(function() {
     $('#loadingOrder').removeClass('d-none');
     $('#btnKirimOrder').prop('disabled', true);
 
-    $.post('/konveksi/api/transaksi.php', {
-        action: 'create',
-        jenis_transaksi: $('#co_jenis').val(),
-        jenis_pembayaran: $('#co_pembayaran').val(),
-        tanggal_selesai: $('#co_tgl_selesai').val(),
-        deskripsi: $('#co_deskripsi').val(),
-        items: JSON.stringify(items)
-    }, function(res) {
-        $('#loadingOrder').addClass('d-none');
-        $('#btnKirimOrder').prop('disabled', false);
-        if (res.success) {
-            keranjang = [];
-            updateKeranjangBar();
-            $('#modalCheckout').modal('hide');
-            $('#alertCheckout').html('');
-            showToast('Pesanan berhasil dibuat! Cek di Transaksi Saya.');
-            setTimeout(function() {
-                window.location.href = '/konveksi/pelanggan/transaksi.php';
-            }, 2000);
-        } else {
-            $('#alertCheckout').html('<div class="alert alert-danger">' + (res.error ||
-                'Gagal membuat pesanan.') + '</div>');
+    // Gunakan FormData agar bisa kirim file
+    let formData = new FormData();
+    formData.append('action', 'create');
+    formData.append('jenis_transaksi', 'konveksi');
+    formData.append('jenis_pembayaran', $('#co_pembayaran').val());
+    formData.append('tanggal_selesai', $('#co_tgl_selesai').val());
+    formData.append('deskripsi', $('#co_deskripsi').val());
+    formData.append('items', JSON.stringify(items));
+    if (file) {
+        formData.append('file_desain', file);
+    }
+
+    $.ajax({
+        url: '/konveksi/api/transaksi.php',
+        type: 'POST',
+        data: formData,
+        processData: false, // WAJIB untuk FormData
+        contentType: false, // WAJIB untuk FormData
+        dataType: 'json',
+        success: function(res) {
+            $('#loadingOrder').addClass('d-none');
+            $('#btnKirimOrder').prop('disabled', false);
+            if (res.success) {
+                keranjang = [];
+                updateKeranjangBar();
+                $('#modalCheckout').modal('hide');
+                showToast('Pesanan konveksi berhasil dibuat!');
+                setTimeout(function() {
+                    window.location.href = '/konveksi/pelanggan/transaksi.php';
+                }, 2000);
+            } else {
+                $('#alertCheckout').html('<div class="alert alert-danger">' +
+                    (res.error || 'Gagal membuat pesanan.') + '</div>');
+            }
+        },
+        error: function() {
+            $('#loadingOrder').addClass('d-none');
+            $('#btnKirimOrder').prop('disabled', false);
+            $('#alertCheckout').html(
+                '<div class="alert alert-danger">Terjadi kesalahan koneksi.</div>');
         }
-    }, 'json');
+    });
 });
 
-// ── Detail produk ─────────────────────────────────────────────
 function lihatDetail(id) {
     produkAktif = null;
     $('#isiDetail').html('<div class="text-center py-3"><div class="spinner-border text-primary"></div></div>');
@@ -346,28 +372,21 @@ function lihatDetail(id) {
 
     $.get('/konveksi/api/produk.php?action=detail_publik&id=' + id, function(p) {
         produkAktif = p;
-        let img = p.gambar ?
-            '/konveksi/assets/uploads/' + p.gambar :
+        let img = p.gambar ? '/konveksi/assets/uploads/' + p.gambar :
             'https://via.placeholder.com/400x180?text=No+Image';
-
         $('#isiDetail').html(
             '<img src="' + img +
             '" class="img-fluid rounded mb-3" style="width:100%;max-height:200px;object-fit:cover">' +
             '<table class="table table-sm table-bordered">' +
             '<tr><th>Nama</th><td>' + p.nama_produk + '</td></tr>' +
-            '<tr><th>Jenis</th><td>' + p.jenis.replace(/_/g, ' ') + '</td></tr>' +
             '<tr><th>Kategori</th><td>' + (p.kategori || '-') + '</td></tr>' +
             '<tr><th>Harga</th><td class="fw-bold text-success">Rp ' + parseInt(p.harga).toLocaleString(
-                'id-ID') + '</td></tr>' +
+                'id-ID') + ' / pcs</td></tr>' +
             '<tr><th>Stok</th><td>' + p.stok + ' pcs</td></tr>' +
-            '<tr><th>Model</th><td>' + (p.model || '-') + '</td></tr>' +
             '<tr><th>Deskripsi</th><td>' + (p.deskripsi || '-') + '</td></tr>' +
             '</table>'
         );
-
-        if (parseInt(p.stok) > 0) {
-            $('#btnTambahDariDetail').removeClass('d-none');
-        }
+        if (parseInt(p.stok) > 0) $('#btnTambahDariDetail').removeClass('d-none');
     }, 'json');
 }
 
@@ -377,46 +396,34 @@ $('#btnTambahDariDetail').click(function() {
     bootstrap.Modal.getInstance(document.getElementById('modalDetail')).hide();
 });
 
-// ── Toast ─────────────────────────────────────────────────────
 function showToast(pesan) {
     $('#toastPesan').text(pesan);
-    let toast = new bootstrap.Toast(document.getElementById('toastNotif'), {
+    new bootstrap.Toast(document.getElementById('toastNotif'), {
         delay: 2500
-    });
-    toast.show();
+    }).show();
 }
 
-// ── Init ──────────────────────────────────────────────────────
-$(document).ready(function() {
+// Preview file desain saat dipilih
+$('#co_file_desain').on('change', function() {
+    let file = this.files[0];
+    $('#previewDesain').addClass('d-none');
+    $('#previewDesainPdf').addClass('d-none');
+    if (!file) return;
 
-    let jahit = sessionStorage.getItem('pesan_jahit');
-    if (jahit) {
-        try {
-            let k = JSON.parse(jahit);
-            sessionStorage.removeItem('pesan_jahit');
-            $.post('/konveksi/api/kustom.php', {
-                action: 'submit',
-                jenis: k.jenis,
-                ukuran: k.ukuran,
-                jumlah: k.jumlah,
-                catatan: k.catatan,
-                estimasi: k.estimasi,
-                jenis_pembayaran: 'dp'
-            }, function(res) {
-                if (res.success) {
-                    alert('✅ Pesanan jahit satuan Anda berhasil dikirim!\nID Transaksi: #' + res
-                        .id_transaksi +
-                        '\n\nAdmin akan menghubungi Anda untuk konfirmasi harga sebelum pembayaran.'
-                    );
-                } else {
-                    alert('Gagal mengirim pesanan: ' + res.error);
-                }
-            }, 'json');
-        } catch (e) {
-            sessionStorage.removeItem('pesan_jahit');
-        }
+    if (file.type === 'application/pdf') {
+        $('#namaPdfDesain').text(' ' + file.name);
+        $('#previewDesainPdf').removeClass('d-none');
+    } else if (file.type.startsWith('image/')) {
+        let reader = new FileReader();
+        reader.onload = function(e) {
+            $('#previewDesainImg').attr('src', e.target.result);
+            $('#previewDesain').removeClass('d-none');
+        };
+        reader.readAsDataURL(file);
     }
+});
 
+$(document).ready(function() {
     loadProduk();
     $('#searchProduk').on('keyup', loadProduk);
 });

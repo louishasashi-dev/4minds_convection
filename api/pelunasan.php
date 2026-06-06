@@ -10,19 +10,10 @@ switch ($action) {
     case 'list':
         $role = $_SESSION['role'];
         if ($role === 'admin') {
-            $sql = "SELECT pb.*, t.jenis_transaksi, t.total_harga, p.name as nama_pelanggan 
-                    FROM pembayaran pb 
-                    JOIN transaksi t ON pb.id_transaksi = t.id_transaksi 
-                    JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan 
-                    ORDER BY pb.tanggal_pembayaran DESC";
+            $sql = "SELECT pb.*, t.jenis_transaksi, t.total_harga, t.jenis_pembayaran, p.name as nama_pelanggan, (SELECT COUNT(*) FROM pembayaran pb2 WHERE pb2.id_transaksi = pb.id_transaksi AND pb2.id_pembayaran <= pb.id_pembayaran) AS urutan_bayar FROM pembayaran pb JOIN transaksi t ON pb.id_transaksi = t.id_transaksi JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan ORDER BY pb.tanggal_pembayaran DESC";
         } else {
             $id  = $_SESSION['user_id'];
-            $sql = "SELECT pb.*, t.jenis_transaksi, t.total_harga, p.name as nama_pelanggan 
-                    FROM pembayaran pb 
-                    JOIN transaksi t ON pb.id_transaksi = t.id_transaksi 
-                    JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan 
-                    WHERE t.id_pelanggan = $id AND pb.status != 'terkonfirmasi'
-                    ORDER BY pb.tanggal_pembayaran DESC";
+           $sql = "SELECT pb.*, t.jenis_transaksi, t.total_harga, t.jenis_pembayaran, p.name as nama_pelanggan, (SELECT COUNT(*) FROM pembayaran pb2 WHERE pb2.id_transaksi = pb.id_transaksi AND pb2.id_pembayaran <= pb.id_pembayaran) AS urutan_bayar FROM pembayaran pb JOIN transaksi t ON pb.id_transaksi = t.id_transaksi JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan WHERE t.id_pelanggan = $id ORDER BY pb.tanggal_pembayaran DESC";
         }
         $res = $conn->query($sql);
         $data = [];
@@ -63,22 +54,6 @@ switch ($action) {
         $conn->query("UPDATE pembayaran SET status='$status_baru', id_admin=$id_admin WHERE id_pembayaran=$id_bayar");
 
         // Cek otomatis lunas hanya jika dikonfirmasi, bukan ditolak
-        if ($status_baru === 'terkonfirmasi') {
-            $pb  = $conn->query("SELECT * FROM pembayaran WHERE id_pembayaran=$id_bayar")->fetch_assoc();
-            $trx = $conn->query("SELECT * FROM transaksi WHERE id_transaksi={$pb['id_transaksi']}")->fetch_assoc();
-            $total_bayar = $conn->query("SELECT SUM(jumlah_bayar) as s FROM pembayaran WHERE id_transaksi={$pb['id_transaksi']} AND status='terkonfirmasi'")->fetch_assoc()['s'];
-            if ($total_bayar >= $trx['total_harga']) {
-                // Sudah lunas penuh
-                $conn->query("UPDATE transaksi SET status='lunas' WHERE id_transaksi={$pb['id_transaksi']}");
-            } else {
-                // Baru DP / bayar sebagian — set diproses
-                $conn->query("UPDATE transaksi SET status='diproses' WHERE id_transaksi={$pb['id_transaksi']}");
-            }
-        } else {
-            // Ditolak — kembalikan transaksi ke pending agar pelanggan bisa upload ulang
-            $pb = $conn->query("SELECT * FROM pembayaran WHERE id_pembayaran=$id_bayar")->fetch_assoc();
-            $conn->query("UPDATE transaksi SET status='pending' WHERE id_transaksi={$pb['id_transaksi']}");
-        }// Cek otomatis lunas hanya jika dikonfirmasi, bukan ditolak
         if ($status_baru === 'terkonfirmasi') {
             $pb  = $conn->query("SELECT * FROM pembayaran WHERE id_pembayaran=$id_bayar")->fetch_assoc();
             $trx = $conn->query("SELECT * FROM transaksi WHERE id_transaksi={$pb['id_transaksi']}")->fetch_assoc();
