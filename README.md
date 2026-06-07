@@ -1,4 +1,4 @@
-<img width="1919" height="877" alt="image" src="https://github.com/user-attachments/assets/d2f56ca6-5a45-4bb3-9d3c-0cb77d10f289" /># 4MINDS Convection
+# 4MINDS Convection
 
 Sistem Informasi Manajemen Konveksi berbasis web yang dirancang untuk membantu proses operasional bisnis konveksi mulai dari pengelolaan produk, pemesanan pelanggan, transaksi, pelunasan, pengiriman, hingga pelaporan.
 
