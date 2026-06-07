@@ -1,4 +1,4 @@
-# 4MINDS Convection
+<img width="1919" height="877" alt="image" src="https://github.com/user-attachments/assets/d2f56ca6-5a45-4bb3-9d3c-0cb77d10f289" /># 4MINDS Convection
 
 Sistem Informasi Manajemen Konveksi berbasis web yang dirancang untuk membantu proses operasional bisnis konveksi mulai dari pengelolaan produk, pemesanan pelanggan, transaksi, pelunasan, pengiriman, hingga pelaporan.
 
@@ -78,7 +78,9 @@ Proyek ini dikembangkan menggunakan PHP Native dengan database MySQL.
 
 ### Halaman Publik
 
-<img width="325" height="622" alt="image" src="https://github.com/user-attachments/assets/0b5a0a08-d4a5-44a3-ab7b-03956ede10c9" />
+<img width="1919" height="877" alt="image" src="https://github.com/user-attachments/assets/55a6ae23-471a-4bdd-a8c4-a5412091c089" />
+
+
 
 ### Halaman Login
 
