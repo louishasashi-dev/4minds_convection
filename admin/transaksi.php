@@ -45,11 +45,12 @@ require_once '../config/db.php';
                     <th>#</th>
                     <th>Pelanggan</th>
                     <th>Jenis</th>
+                    <th>Ukuran</th>
                     <th>Total</th>
+                    <th>Diskon</th>
                     <th>Pembayaran</th>
                     <th>Status</th>
                     <th>Tanggal</th>
-                    <th>Deskripsi</th>
                     <th>Aksi</th>
                 </tr>
             </thead>
@@ -168,19 +169,32 @@ $(document).ready(function() {
                 if (filterJenis && t.jenis_transaksi !== filterJenis) return;
                 let badgeClass = t.status === 'lunas' ? 'success' : t.status === 'pending' ?
                     'warning' : 'info';
+                let diskon = parseFloat(t.diskon_total) > 0 ?
+                    '<span class="text-danger">-Rp ' + parseInt(t.diskon_total).toLocaleString(
+                        'id-ID') + '</span>' :
+                    '<span class="text-muted">-</span>';
+
+                let ukuran = t.ukuran ?
+                    `<span class="badge bg-secondary">${t.ukuran}</span>` :
+                    '<span class="text-muted">-</span>';
+
                 tbody.append(`<tr>
                     <td>${t.id_transaksi}</td>
                     <td>${t.nama_pelanggan}</td>
-                    <td>${t.jenis_transaksi}</td>
+                    <td>${t.jenis_transaksi.replace(/_/g,' ')}</td>
+                    <td>${ukuran}</td>
                     <td>Rp ${parseInt(t.total_harga).toLocaleString('id-ID')}</td>
+                    <td>${diskon}</td>
                     <td>${t.jenis_pembayaran}</td>
                     <td><span class="badge bg-${badgeClass}">${t.status}</span></td>
                     <td>${t.tanggal_transaksi.substring(0,10)}</td>
-                    <td>${t.deskripsi ? '<span title="'+t.deskripsi+'">'+t.deskripsi.substring(0,30)+(t.deskripsi.length>30?'...':'')+'</span>' : '-'}</td>
                     <td>
-                        <button class="btn btn-sm btn-info" onclick="lihatDetail(${t.id_transaksi})"><i class="bi bi-eye"></i></button>
-                        ${t.jenis_transaksi === 'kustom' && t.total_harga == 0 ? `<button class="btn btn-sm btn-warning" onclick="setHargaKustom(${t.id_transaksi})" title="Set Harga"><i class="bi bi-tag"></i></button>` : ''}
-                        <button class="btn btn-sm btn-success" onclick="updateStatus(${t.id_transaksi})"><i class="bi bi-check2-circle"></i></button>
+                        <button class="btn btn-sm btn-info" onclick="lihatDetail(${t.id_transaksi})">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-success" onclick="updateStatus(${t.id_transaksi})">
+                            <i class="bi bi-check2-circle"></i>
+                        </button>
                     </td>
                 </tr>`);
             });

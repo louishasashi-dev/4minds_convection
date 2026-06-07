@@ -12,13 +12,6 @@ require_once '../config/db.php';
         <span>👤 <?= htmlspecialchars($_SESSION['user_name']) ?></span>
     </div>
     <div class="main-content">
-
-        <!--
-            PERBAIKAN UTAMA: col-auto diganti col-12 col-sm-auto,
-            dan select diberi min-width: 160px.
-            Tanpa min-width, "Semua Status" tidak muat karena form-select-sm
-            punya padding kecil dan browser menghitung lebar dari option terpendek.
-        -->
         <div class="row mb-3 g-2">
             <div class="col-12 col-sm-auto">
                 <select id="filterStatus" class="form-select form-select-sm" style="min-width: 160px;">

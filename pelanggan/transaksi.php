@@ -16,7 +16,7 @@ $id = $_SESSION['user_id'];
 
         <!-- Filter status -->
         <div class="row mb-3 g-2 align-items-center">
-            <div class="col-auto">
+            <div class="col-2">
                 <select id="filterStatus" class="form-select form-select-sm">
                     <option value="">Semua Status</option>
                     <option value="pending">Pending</option>
@@ -27,7 +27,7 @@ $id = $_SESSION['user_id'];
                     <option value="batal">Batal</option>
                 </select>
             </div>
-            <div class="col-auto">
+            <div class="col-2">
                 <select id="filterJenis" class="form-select form-select-sm">
                     <option value="">Semua Jenis</option>
                     <option value="jahit_satuan">Jahit Satuan</option>
@@ -45,6 +45,7 @@ $id = $_SESSION['user_id'];
                         <tr>
                             <th>#</th>
                             <th>Jenis</th>
+                            <th>Ukuran</th>
                             <th>Total</th>
                             <th>Diskon</th>
                             <th>Pembayaran</th>
@@ -55,7 +56,7 @@ $id = $_SESSION['user_id'];
                     </thead>
                     <tbody id="bodyTrx">
                         <tr>
-                            <td colspan="8" class="text-center py-4">
+                            <td colspan="9" class="text-center py-4">
                                 <div class="spinner-border text-primary"></div>
                             </td>
                         </tr>
@@ -204,7 +205,7 @@ function renderTabel() {
     tbody.empty();
 
     if (filtered.length === 0) {
-        tbody.html('<tr><td colspan="8" class="text-center text-muted py-4">Tidak ada transaksi.</td></tr>');
+        tbody.html('<tr><td colspan="9" class="text-center text-muted py-4">Tidak ada transaksi.</td></tr>');
         return;
     }
 
@@ -222,16 +223,20 @@ function renderTabel() {
             '<span class="text-danger">-Rp ' + parseInt(t.diskon_total).toLocaleString('id-ID') + '</span>' :
             '<span class="text-muted">-</span>';
 
+        let ukuran = t.ukuran ?
+            `<span class="badge bg-secondary">${t.ukuran}</span>` :
+            '<span class="text-muted">-</span>';
+
         let btnBayar = (t.status === 'pending' || t.status === 'diproses') ?
             `<button class="btn btn-sm btn-success" onclick="bukaBayar(${t.id_transaksi}, ${t.total_harga})">
-                 <i class="bi bi-cash"></i>
-               </button>` :
-            '';
+                <i class="bi bi-cash"></i>
+             </button>` : '';
 
         tbody.append(`
             <tr>
                 <td>${t.id_transaksi}</td>
                 <td>${t.jenis_transaksi.replace(/_/g, ' ')}</td>
+                <td>${ukuran}</td>
                 <td>Rp ${parseInt(t.total_harga).toLocaleString('id-ID')}</td>
                 <td>${diskon}</td>
                 <td>${t.jenis_pembayaran}</td>

@@ -503,7 +503,53 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script>
+    // Data ukuran dan multiplier harga
+    const ukuranList = []; // diisi dari API
+    const ukuranPct = {
+        'XS': 0,
+        'S': 0,
+        'M': 0.02,
+        'L': 0.04,
+        'XL': 0.07,
+        'XXL': 0.10,
+        'XXXL': 0.14,
+        '3XL': 0.14,
+        '4XL': 0.18,
+        '5XL': 0.22
+    };
+
+    // Load ukuran dari DB saat halaman siap
+    $(document).ready(function() {
+        $.get('/konveksi/api/ukuran.php?action=list_ukuran', function(data) {
+            data.forEach(u => ukuranList.push(u.ukuran));
+        }, 'json');
+    });
+
     function pesanProduk(id, nama, harga, jenis) {
+        <?php if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'pelanggan'): ?>
+        // Sudah login — buka modal pesan
+        $('#pesan_id_produk').val(id);
+        $('#pesan_harga_dasar').val(harga);
+        $('#pesan_jenis_produk').val(jenis);
+        $('#modalPesanJudul').text('Pesan: ' + nama);
+        $('#alertPesan').html('');
+
+        // Isi dropdown ukuran
+        let sel = $('#pesan_ukuran');
+        sel.empty();
+        ukuranList.forEach((u, idx) => {
+            let pct = ukuranPct[u.toUpperCase()] || 0;
+            let hargaU = Math.round(harga * (1 + pct));
+            let label = pct > 0 ? `${u} (+${pct*100}% = Rp ${hargaU.toLocaleString('id-ID')})` :
+                `${u} (Rp ${hargaU.toLocaleString('id-ID')})`;
+            sel.append(`<option value="${u}" data-pct="${pct}">${label}</option>`);
+        });
+
+        $('#pesan_qty').val(1);
+        hitungHargaPesan();
+        new bootstrap.Modal(document.getElementById('modalPesan')).show();
+        <?php else: ?>
+        // Belum login
         sessionStorage.setItem('pesan_produk', JSON.stringify({
             id,
             nama,
@@ -513,7 +559,73 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
         $('#pesanModalLogin').text('Login dulu untuk memesan "' + nama + '"');
         $('#btnLoginModal').attr('href', '/konveksi/auth/login.php?redirect=transaksi&produk=' + id);
         new bootstrap.Modal(document.getElementById('modalLogin')).show();
+        <?php endif; ?>
     }
+
+    function hitungHargaPesan() {
+        let hargaDasar = parseFloat($('#pesan_harga_dasar').val()) || 0;
+        let pct = parseFloat($('#pesan_ukuran option:selected').data('pct')) || 0;
+        let qty = parseInt($('#pesan_qty').val()) || 1;
+        let hargaSatuan = Math.round(hargaDasar * (1 + pct));
+        let subtotal = hargaSatuan * qty;
+
+        // Diskon qty > 50
+        let diskonQty = 0;
+        if (qty > 50) {
+            diskonQty = subtotal * 0.02;
+            $('#row_diskon_qty').removeClass('d-none');
+            $('#info_diskon_nominal').text('-Rp ' + Math.round(diskonQty).toLocaleString('id-ID'));
+            $('#info_diskon_qty').text('✅ Kamu dapat diskon 2% karena pesan lebih dari 50 pcs!');
+        } else {
+            $('#row_diskon_qty').addClass('d-none');
+            $('#info_diskon_qty').text('');
+        }
+
+        let total = subtotal - diskonQty;
+        $('#info_harga_satuan').text('Rp ' + hargaSatuan.toLocaleString('id-ID'));
+        $('#info_qty_display').text(qty + ' pcs');
+        $('#info_total_pesan').text('Rp ' + Math.round(total).toLocaleString('id-ID'));
+    }
+
+    $('#btnKirimPesan').click(function() {
+        let id_produk = $('#pesan_id_produk').val();
+        let ukuran = $('#pesan_ukuran').val();
+        let qty = parseInt($('#pesan_qty').val()) || 1;
+        let pembayaran = $('#pesan_pembayaran').val();
+        let jenis = $('#pesan_jenis_produk').val();
+
+        if (!ukuran || qty < 1) {
+            $('#alertPesan').html('<div class="alert alert-warning">Lengkapi pilihan ukuran dan jumlah.</div>');
+            return;
+        }
+
+        $('#loadingPesan').removeClass('d-none');
+        $('#btnKirimPesan').prop('disabled', true);
+
+        $.post('/konveksi/api/transaksi.php', {
+            action: 'create',
+            jenis_transaksi: jenis,
+            jenis_pembayaran: pembayaran,
+            ukuran: ukuran,
+            items: JSON.stringify([{
+                id_produk: id_produk,
+                jumlah: qty
+            }])
+        }, function(res) {
+            $('#loadingPesan').removeClass('d-none');
+            $('#btnKirimPesan').prop('disabled', false);
+            if (res.success) {
+                $('#modalPesan').modal('hide');
+                let info =
+                    `Pesanan berhasil! ID Transaksi: #${res.id_transaksi}\nTotal: Rp ${parseInt(res.total).toLocaleString('id-ID')}`;
+                if (res.diskon_total > 0) info +=
+                    `\nDiskon: Rp ${parseInt(res.diskon_total).toLocaleString('id-ID')}`;
+                alert(info);
+            } else {
+                $('#alertPesan').html('<div class="alert alert-danger">' + res.error + '</div>');
+            }
+        }, 'json');
+    });
 
     function lihatDetailProduk(id) {
         $('#isiDetailProduk').html(
@@ -541,43 +653,76 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
             });
         }, 'json');
     }
-
-    <?php if (isset($_SESSION['user_id']) && $_SESSION['role'] === 'pelanggan'): ?>
-    // Sudah login — langsung kirim
-    $.post('/konveksi/api/kustom.php', {
-        action: 'submit',
-        jenis: jenis,
-        ukuran: $('#kustom_ukuran').val(),
-        jumlah: jumlah,
-        catatan: catatan,
-        estimasi: $('#kustom_estimasi').val(),
-        jenis_pembayaran: 'dp'
-    }, function(res) {
-        if (res.success) {
-            $('#alertKustom').html(
-                '<div class="alert alert-success">✅ Pesanan kustom berhasil dikirim! ID Transaksi: <strong>#' +
-                res.id_transaksi +
-                '</strong>. Admin akan menghubungi Anda untuk konfirmasi harga.</div>');
-            $('#kustom_jenis, #kustom_catatan, #kustom_estimasi').val('');
-            $('#kustom_jumlah').val(1);
-        } else {
-            $('#alertKustom').html('<div class="alert alert-danger">Error: ' + res.error + '</div>');
-        }
-    }, 'json');
-    <?php else: ?>
-    // Belum login — simpan ke sessionStorage, arahkan ke login
-    sessionStorage.setItem('pesan_kustom', JSON.stringify({
-        jenis,
-        ukuran: $('#kustom_ukuran').val(),
-        jumlah,
-        catatan,
-        estimasi: $('#kustom_estimasi').val()
-    }));
-    $('#btnLoginModal').attr('href', '/konveksi/auth/login.php?redirect=kustom');
-    $('#pesanModalLogin').text('Login atau daftar dulu untuk melanjutkan pemesanan kustom.');
-    new bootstrap.Modal(document.getElementById('modalLogin')).show();
-    <?php endif; ?>
     </script>
+    <!-- Modal Pesan Produk dengan Ukuran -->
+    <div class="modal fade" id="modalPesan" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalPesanJudul">Pesan Produk</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="pesan_id_produk">
+                    <input type="hidden" id="pesan_harga_dasar">
+                    <input type="hidden" id="pesan_jenis_produk">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Pilih Ukuran</label>
+                        <select id="pesan_ukuran" class="form-select" onchange="hitungHargaPesan()">
+                            <!-- diisi JS -->
+                        </select>
+                        <small class="text-muted">Ukuran lebih besar = harga menyesuaikan</small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Jumlah (pcs)</label>
+                        <input type="number" id="pesan_qty" class="form-control" value="1" min="1"
+                            oninput="hitungHargaPesan()">
+                        <small class="text-muted" id="info_diskon_qty"></small>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Metode Pembayaran</label>
+                        <select id="pesan_pembayaran" class="form-select">
+                            <option value="lunas">Lunas</option>
+                            <option value="dp">DP 50%</option>
+                            <option value="cod">COD</option>
+                        </select>
+                    </div>
+
+                    <div class="alert alert-light border mb-0">
+                        <div class="d-flex justify-content-between">
+                            <span>Harga satuan:</span>
+                            <strong id="info_harga_satuan">Rp 0</strong>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Jumlah:</span>
+                            <strong id="info_qty_display">1 pcs</strong>
+                        </div>
+                        <div class="d-flex justify-content-between text-success d-none" id="row_diskon_qty">
+                            <span>Diskon qty >50 pcs (2%):</span>
+                            <strong id="info_diskon_nominal">-Rp 0</strong>
+                        </div>
+                        <hr class="my-2">
+                        <div class="d-flex justify-content-between fs-5">
+                            <span class="fw-bold">Total:</span>
+                            <strong class="text-success" id="info_total_pesan">Rp 0</strong>
+                        </div>
+                    </div>
+
+                    <div id="alertPesan" class="mt-3"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" class="btn btn-pesan fw-bold" id="btnKirimPesan">
+                        <span id="loadingPesan" class="spinner-border spinner-border-sm d-none"></span>
+                        🛒 Pesan Sekarang
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>
