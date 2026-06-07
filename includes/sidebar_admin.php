@@ -1,5 +1,8 @@
 <div class="sidebar" style="width:230px; flex-shrink:0">
-    <div class="brand">🧵 Konveksi</div>
+    <div class="brand">
+        <img src="/konveksi/assets/logo/logofavicon.png" alt="Logo" style="height:36px;object-fit:contain;">
+        4MINDS CONVECTION
+    </div>
     <a href="/konveksi/admin/dashboard.php"><i class="bi bi-speedometer2"></i> Dashboard</a>
     <div class="px-3 pt-2 pb-1 text-secondary" style="font-size:.75rem">DATA REFERENSI</div>
     <a href="/konveksi/admin/pelanggan.php"><i class="bi bi-people"></i> Pelanggan</a>
