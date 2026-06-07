@@ -76,93 +76,57 @@ Proyek ini dikembangkan menggunakan PHP Native dengan database MySQL.
 
 ## 📸 Screenshot Aplikasi
 
+### Halaman Publik
+
+
 ### Halaman Login
 
-Tambahkan screenshot halaman login.
-
-![Login](screenshots/login.png)
-
----
+<img width="1919" height="891" alt="image" src="https://github.com/user-attachments/assets/bd770983-8537-4275-ac8f-034bce56873c" />
 
 ### Dashboard Admin
 
-Tambahkan screenshot dashboard admin.
-
-![Dashboard Admin](screenshots/admin-dashboard.png)
-
----
+<img width="1911" height="883" alt="image" src="https://github.com/user-attachments/assets/092fe256-a85d-4f16-85ce-d28a454a2055" />
 
 ### Manajemen Produk
 
-Tambahkan screenshot halaman produk admin.
-
-![Manajemen Produk](screenshots/admin-produk.png)
-
----
+<img width="1919" height="885" alt="image" src="https://github.com/user-attachments/assets/d977d9fa-1095-42e6-9b57-b912bcfd1e78" />
 
 ### Manajemen Pelanggan
 
-Tambahkan screenshot halaman pelanggan admin.
-
-![Manajemen Pelanggan](screenshots/admin-pelanggan.png)
-
----
+<img width="1919" height="889" alt="image" src="https://github.com/user-attachments/assets/9373e297-6131-48cd-bc08-cf7dcac0de2f" />
 
 ### Manajemen Transaksi
 
-Tambahkan screenshot halaman transaksi.
-
-![Transaksi](screenshots/admin-transaksi.png)
-
----
+<img width="1919" height="884" alt="image" src="https://github.com/user-attachments/assets/5a3ae628-a741-4c7d-95b9-279fe0607b61" />
 
 ### Manajemen Pelunasan
 
-Tambahkan screenshot halaman pelunasan.
-
-![Pelunasan](screenshots/admin-pelunasan.png)
-
----
+<img width="1917" height="884" alt="image" src="https://github.com/user-attachments/assets/a0bf030e-27a0-48ec-9a59-93928070c786" />
 
 ### Manajemen Pengiriman
 
-Tambahkan screenshot halaman pengiriman.
-
-![Pengiriman](screenshots/admin-pengiriman.png)
-
----
+<img width="1919" height="884" alt="image" src="https://github.com/user-attachments/assets/3f30cc33-00dd-46f8-8334-1f0e3005152f" />
 
 ### Dashboard Pelanggan
 
-Tambahkan screenshot dashboard pelanggan.
-
-![Dashboard Pelanggan](screenshots/pelanggan-dashboard.png)
-
----
+<img width="1919" height="879" alt="image" src="https://github.com/user-attachments/assets/2292dcba-1f6d-4aca-982b-d99d634e40ac" />
 
 ### Katalog Produk
 
-Tambahkan screenshot katalog produk.
-
-![Produk](screenshots/pelanggan-produk.png)
-
----
+<img width="1919" height="889" alt="image" src="https://github.com/user-attachments/assets/2aca6ae9-c919-4185-a0b5-78d0dea17f10" />
 
 ### Pemesanan Jasa Konveksi
 
-Tambahkan screenshot halaman jasa konveksi.
-
-![Jasa Konveksi](screenshots/pelanggan-konveksi.png)
-
----
+<img width="1919" height="886" alt="image" src="https://github.com/user-attachments/assets/74e7b348-731a-4830-96ce-2d81be9ed954" />
 
 ### Dokumen Transaksi
 
-Tambahkan screenshot dokumen transaksi.
-
-![Dokumen Transaksi](screenshots/dokumen-transaksi.png)
-
----
+#### invoice :
+<img width="603" height="671" alt="image" src="https://github.com/user-attachments/assets/3ac2d158-2995-4e0e-a6db-c6375aa6631c" />
+#### kwitansi :
+<img width="604" height="674" alt="image" src="https://github.com/user-attachments/assets/0205be36-fc82-4a46-bc0b-d2e8ecd423ed" />
+#### nota pesanan :
+<img width="599" height="669" alt="image" src="https://github.com/user-attachments/assets/26b77f7b-6492-461c-b1dc-1b748778c766" />
 
 ## 📊 Analisis dan Perancangan Sistem
 
