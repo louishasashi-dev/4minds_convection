@@ -50,27 +50,57 @@ $(document).ready(function() {
         if (data.length === 0) {
             tbody.html(
                 '<tr><td colspan="8" class="text-center text-muted py-4">Belum ada data pengiriman.</td></tr>'
-            );
+                );
             return;
         }
         data.forEach((p, i) => {
             let badge = p.status === 'sampai' ? 'success' : p.status === 'dikirim' ? 'info' :
                 'secondary';
+            let btnCOD = '';
+            if (p.status === 'sampai' && p.status_transaksi === 'sampai' && p
+                .jenis_pembayaran === 'cod') {
+                btnCOD = `<br><button class="btn btn-success btn-sm mt-1" onclick="bayarCOD(${p.id_transaksi})">
+                            <i class="bi bi-cash-coin"></i> Bayar COD
+                          </button>`;
+            }
             tbody.append(`
                 <tr>
                     <td>${i + 1}</td>
                     <td>#${p.id_transaksi} <small class="text-muted">(${p.jenis_transaksi.replace(/_/g,' ')})</small></td>
                     <td>${p.kurir || '-'}</td>
-                    <td>${p.no_resi
-                        ? `<code>${p.no_resi}</code>`
-                        : '<span class="text-muted">-</span>'}</td>
+                    <td>${p.no_resi ? `<code>${p.no_resi}</code>` : '<span class="text-muted">-</span>'}</td>
                     <td>${p.tanggal_kirim   || '-'}</td>
                     <td>${p.estimasi_sampai || '-'}</td>
                     <td>${p.tanggal_tiba    || '-'}</td>
-                    <td><span class="badge bg-${badge}">${p.status}</span></td>
+                    <td><span class="badge bg-${badge}">${p.status}</span>${btnCOD}</td>
                 </tr>
             `);
         });
     }, 'json');
 });
+
+function bayarCOD(id_transaksi) {
+    if (!confirm('Konfirmasi pembayaran COD untuk transaksi #' + id_transaksi + '?')) return;
+    let fd = new FormData();
+    fd.append('action', 'bayar');
+    fd.append('id_transaksi', id_transaksi);
+    fd.append('metode', 'cod');
+    fd.append('jumlah', 0);
+    $.ajax({
+        url: '/konveksi/api/pelunasan.php',
+        type: 'POST',
+        data: fd,
+        contentType: false,
+        processData: false,
+        success: function(res) {
+            if (res.success) {
+                alert('Pembayaran COD berhasil dikirim! Menunggu konfirmasi admin.');
+                location.reload();
+            } else {
+                alert('Error: ' + res.error);
+            }
+        },
+        dataType: 'json'
+    });
+}
 </script>

@@ -201,9 +201,11 @@ const ukuranPct = {
     'XL': 0.07,
     'XXL': 0.10,
     'XXXL': 0.14,
-    '3XL': 0.14,
-    '4XL': 0.18,
-    '5XL': 0.22
+    'XXXXL': 0.18,
+    'XXXXXL': 0.22,
+    'XXXXXXL': 0.26,
+    'XXXXXXXL': 0.30,
+    'XXXXXXXXL': 0.35
 };
 
 $(document).ready(function() {

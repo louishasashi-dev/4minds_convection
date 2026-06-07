@@ -6,14 +6,12 @@ header('Content-Type: application/json');
 $action = $_GET['action'] ?? '';
 
 if ($action === 'list_ukuran') {
-    // Ambil ukuran unik saja, diurutkan dari kecil ke besar
-    $urutanUkuran = ['XS','S','M','L','XL','XXL','XXXL','3XL','4XL','5XL'];
-    $res  = $conn->query("SELECT DISTINCT ukuran FROM ukuran_model ORDER BY id_ukuran_model ASC");
+    $urutanUkuran = ['XS','S','M','L','XL','XXL','XXXL','XXXXL','XXXXXL','XXXXXXL','XXXXXXXL','XXXXXXXXL'];
+    $res = $conn->query("SELECT ukuran FROM ukuran_model GROUP BY ukuran");
     $data = [];
     while ($r = $res->fetch_assoc()) {
         $data[] = ['ukuran' => $r['ukuran']];
     }
-    // Sort sesuai urutan standar
     usort($data, function($a, $b) use ($urutanUkuran) {
         $ai = array_search(strtoupper($a['ukuran']), $urutanUkuran);
         $bi = array_search(strtoupper($b['ukuran']), $urutanUkuran);

@@ -226,8 +226,8 @@ function renderTabel() {
         let ukuran = t.ukuran ?
             `<span class="badge bg-secondary">${t.ukuran}</span>` :
             '<span class="text-muted">-</span>';
-
-        let btnBayar = (t.status === 'pending' || t.status === 'diproses') ?
+        let btnBayar = (t.status === 'pending' || t.status === 'diproses' || (t.status === 'dikirim' && t
+                .jenis_pembayaran === 'cod')) ?
             `<button class="btn btn-sm btn-success" onclick="bukaBayar(${t.id_transaksi}, ${t.total_harga})">
                 <i class="bi bi-cash"></i>
              </button>` : '';

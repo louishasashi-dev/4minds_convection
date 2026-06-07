@@ -69,16 +69,18 @@ switch ($action) {
 
     // Persentase kenaikan harga per ukuran
     $ukuran_multiplier = [
-        'XS'    => 0.00,
-        'S'     => 0.00,
-        'M'     => 0.02,
-        'L'     => 0.04,
-        'XL'    => 0.07,
-        'XXL'   => 0.10,
-        'XXXL'  => 0.14,
-        '3XL'   => 0.14,
-        '4XL'   => 0.18,
-        '5XL'   => 0.22,
+        'XS'         => 0.00,
+        'S'          => 0.00,
+        'M'          => 0.02,
+        'L'          => 0.04,
+        'XL'         => 0.07,
+        'XXL'        => 0.10,
+        'XXXL'       => 0.14,
+        'XXXXL'      => 0.18,
+        'XXXXXL'     => 0.22,
+        'XXXXXXL'    => 0.26,
+        'XXXXXXXL'   => 0.30,
+        'XXXXXXXXL'  => 0.35,
     ];
     $pct_ukuran = $ukuran_multiplier[strtoupper($ukuran)] ?? 0.00;
 

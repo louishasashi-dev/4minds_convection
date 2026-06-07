@@ -140,6 +140,36 @@ require_once '../config/db.php';
     </div>
 </div>
 
+<!-- Modal Update Status -->
+<div class="modal fade" id="modalUpdateStatus" tabindex="-1">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Update Status Transaksi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="statusTrxId">
+                <label class="form-label fw-semibold">Pilih Status Baru</label>
+                <select id="pilihanStatus" class="form-select">
+                    <option value="pending">Pending</option>
+                    <option value="diproses">Diproses</option>
+                    <option value="dikirim">Dikirim</option>
+                    <option value="selesai">Selesai</option>
+                    <option value="lunas">Lunas</option>
+                    <option value="batal">Batal</option>
+                </select>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <button type="button" class="btn btn-success" id="btnSimpanStatus">
+                    <i class="bi bi-check2-circle"></i> Simpan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- Modal Detail -->
 <div class="modal fade" id="modalDetail" tabindex="-1">
     <div class="modal-dialog">
@@ -167,8 +197,14 @@ $(document).ready(function() {
             data.forEach((t, i) => {
                 if (filterStatus && t.status !== filterStatus) return;
                 if (filterJenis && t.jenis_transaksi !== filterJenis) return;
-                let badgeClass = t.status === 'lunas' ? 'success' : t.status === 'pending' ?
-                    'warning' : 'info';
+                let badgeClass = {
+                    'lunas': 'success',
+                    'pending': 'warning',
+                    'diproses': 'primary',
+                    'dikirim': 'info',
+                    'selesai': 'secondary',
+                    'batal': 'danger'
+                } [t.status] || 'secondary';
                 let diskon = parseFloat(t.diskon_total) > 0 ?
                     '<span class="text-danger">-Rp ' + parseInt(t.diskon_total).toLocaleString(
                         'id-ID') + '</span>' :
@@ -294,19 +330,26 @@ function lihatDetail(id) {
 }
 
 function updateStatus(id) {
-    let status = prompt('Masukkan status baru (diproses/selesai/dikirim/lunas/batal):');
-    if (!status) return;
+    $('#statusTrxId').val(id);
+    new bootstrap.Modal(document.getElementById('modalUpdateStatus')).show();
+}
+
+$('#btnSimpanStatus').click(function() {
+    let id = $('#statusTrxId').val();
+    let status = $('#pilihanStatus').val();
     $.post('/konveksi/api/transaksi.php', {
         action: 'update_status',
         id: id,
         status: status
     }, function(res) {
         if (res.success) {
-            alert('Status diperbarui');
+            $('#modalUpdateStatus').modal('hide');
             location.reload();
+        } else {
+            alert('Gagal update status: ' + res.error);
         }
     }, 'json');
-}
+});
 
 function setHargaKustom(id) {
     let harga = prompt('Masukkan total harga untuk pesanan kustom ini (angka tanpa titik/koma):');

@@ -10,7 +10,7 @@ switch ($action) {
     case 'list':
         $role = $_SESSION['role'];
         if ($role === 'admin') {
-            $sql = "SELECT pg.*, t.jenis_transaksi, t.status as status_transaksi, p.name as nama_pelanggan
+            $sql = "SELECT pg.*, t.jenis_transaksi, t.status as status_transaksi, t.jenis_pembayaran, p.name as nama_pelanggan
                     FROM pengiriman pg
                     JOIN transaksi t ON pg.id_transaksi = t.id_transaksi
                     JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
@@ -20,17 +20,17 @@ switch ($action) {
                     SELECT NULL, t.id_transaksi, NULL,
                            NULL, NULL, NULL,
                            NULL, NULL, 'belum_dikirim',
-                           t.jenis_transaksi, t.status as status_transaksi, p.name as nama_pelanggan
+                           t.jenis_transaksi, t.status as status_transaksi, t.jenis_pembayaran, p.name as nama_pelanggan
                     FROM transaksi t
                     JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
-                    WHERE t.status IN ('lunas','diproses','selesai','dikirim')
+                    WHERE t.status IN ('lunas','diproses','selesai','dikirim','sampai')
                     AND t.jenis_transaksi != 'jahit_satuan'
                     AND t.id_transaksi NOT IN (SELECT id_transaksi FROM pengiriman)
 
                     ORDER BY tanggal_kirim DESC";
         } else {
             $id = $_SESSION['user_id'];
-            $sql = "SELECT pg.*, t.jenis_transaksi, t.status as status_transaksi, p.name as nama_pelanggan
+            $sql = "SELECT pg.*, t.jenis_transaksi, t.status as status_transaksi, t.jenis_pembayaran, p.name as nama_pelanggan
                     FROM pengiriman pg
                     JOIN transaksi t ON pg.id_transaksi = t.id_transaksi
                     JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
@@ -44,7 +44,6 @@ switch ($action) {
         break;
 
     case 'proses':
-        // Admin memproses pengiriman
         if ($_SESSION['role'] !== 'admin') { echo json_encode(['error' => 'Forbidden']); break; }
         $id_transaksi = intval($_POST['id_transaksi']);
         $id_admin     = $_SESSION['user_id'];
@@ -53,7 +52,6 @@ switch ($action) {
         $tgl_kirim    = $conn->real_escape_string($_POST['tanggal_kirim']);
         $estimasi     = $conn->real_escape_string($_POST['estimasi_sampai']);
 
-        // Cek sudah ada record pengiriman?
         $cek = $conn->query("SELECT id_pengiriman FROM pengiriman WHERE id_transaksi=$id_transaksi")->fetch_assoc();
         if ($cek) {
             $conn->query("UPDATE pengiriman SET kurir='$kurir', no_resi='$no_resi', tanggal_kirim='$tgl_kirim', estimasi_sampai='$estimasi', status='dikirim', id_admin=$id_admin WHERE id_transaksi=$id_transaksi");
@@ -69,6 +67,11 @@ switch ($action) {
         $id_transaksi = intval($_POST['id_transaksi']);
         $tgl_tiba     = date('Y-m-d');
         $conn->query("UPDATE pengiriman SET status='sampai', tanggal_tiba='$tgl_tiba' WHERE id_transaksi=$id_transaksi");
+        // Update status transaksi juga, kecuali sudah lunas/selesai
+        $trx = $conn->query("SELECT status FROM transaksi WHERE id_transaksi=$id_transaksi")->fetch_assoc();
+        if ($trx && !in_array($trx['status'], ['lunas', 'selesai'])) {
+            $conn->query("UPDATE transaksi SET status='sampai' WHERE id_transaksi=$id_transaksi");
+        }
         echo json_encode(['success' => true]);
         break;
 

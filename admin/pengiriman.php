@@ -151,7 +151,10 @@ function render() {
     let tbody = $('#bodyPengiriman');
     tbody.empty();
 
-    let filtered = allData.filter(d => !st || d.status === st);
+    let filtered = allData
+        .filter(d => !st || d.status === st)
+        .sort((a, b) => new Date(b.tanggal_kirim || b.created_at || 0) - new Date(a.tanggal_kirim || a.created_at ||
+        0));
     if (filtered.length === 0) {
         tbody.html('<tr><td colspan="10" class="text-center text-muted py-4">Tidak ada data pengiriman.</td></tr>');
         return;
