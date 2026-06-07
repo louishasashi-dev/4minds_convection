@@ -78,7 +78,7 @@ Proyek ini dikembangkan menggunakan PHP Native dengan database MySQL.
 
 ### Halaman Publik
 
-<img width="4122" height="7864" alt="image" src="konveksi/img/index.php_screeshoot.png" />
+<img width="4122" height="7864" alt="image" src="4minds_convection/img/index.php_screeshoot.png" />
 
 ### Halaman Login
 
