@@ -281,15 +281,39 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
     .btn-daftar:hover::after {
         width: calc(100% - 28px);
     }
+
+    .navbar-brand {
+        padding: 0;
+    }
+
+    .navbar-logo {
+        height: 50px;
+        width: auto;
+        display: block;
+        transition: transform .3s ease;
+    }
+
+    .navbar-brand:hover .navbar-logo {
+        transform: scale(1.03);
+    }
+
+    /* Mobile */
+    @media (max-width: 768px) {
+        .navbar-logo {
+            height: 40px;
+        }
+    }
     </style>
 </head>
 
 <body>
 
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark" style="background:#2c3e50">
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background:#3B3208">
         <div class="container">
-            <a class="navbar-brand" href="/konveksi/">🧵 Konveksi</a>
+            <a class="navbar-brand d-flex align-items-center" href="/konveksi/">
+                <img src="/konveksi/assets/logo/logofavicon.png" alt="4MINDS Convection" class="navbar-logo">
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
                 <span class="navbar-toggler-icon"></span>
             </button>

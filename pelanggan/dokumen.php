@@ -77,7 +77,7 @@ $(document).ready(function() {
         if (data.length === 0) {
             tbody.html(
                 '<tr><td colspan="7" class="text-center text-muted py-4">Belum ada dokumen. Hubungi admin untuk cetak dokumen transaksi Anda.</td></tr>'
-                );
+            );
             return;
         }
         data.forEach((d, i) => {
@@ -127,7 +127,6 @@ function buildDokumenHTML(d) {
         nota: 'NOTA PESANAN'
     };
     let judul = judulMap[d.jenis_dokumen] || 'DOKUMEN';
-
     let rows = '';
     (d.detail || []).forEach(item => {
         rows += `<tr>
@@ -137,7 +136,6 @@ function buildDokumenHTML(d) {
             <td class="text-end">Rp ${parseInt(item.subtotal).toLocaleString('id-ID')}</td>
         </tr>`;
     });
-
     let bayarRows = '';
     (d.pembayaran || []).forEach(b => {
         bayarRows += `<tr>
@@ -146,18 +144,17 @@ function buildDokumenHTML(d) {
             <td class="text-end">Rp ${parseInt(b.jumlah_bayar).toLocaleString('id-ID')}</td>
         </tr>`;
     });
-
     let diskon = parseFloat(d.diskon_total || 0);
     let diskonRow = diskon > 0 ?
         `<tr><td colspan="3" class="text-end text-success">Diskon</td><td class="text-end text-success">- Rp ${diskon.toLocaleString('id-ID')}</td></tr>` :
         '';
     let tglSelesai = d.tanggal_selesai ? `<p><strong>Estimasi Selesai:</strong> ${d.tanggal_selesai}</p>` : '';
-
     return `
-    <div id="areaPreview" style="font-family:sans-serif;font-size:14px;padding:10px;">
+    <div id="areaPreview" style="font-family: sans-serif; font-size: 14px; padding: 10px;">
         <div class="text-center mb-3">
-            <h4 class="fw-bold mb-0">🧵 KONVEKSI</h4>
-            <small class="text-muted">Sistem Informasi Konveksi</small>
+            <img src="/konveksi/assets/logo/logofavicon.png" style="height:60px;object-fit:contain;margin-bottom:8px"><br>
+            <h4 class="fw-bold mb-0">4MINDS CONVECTION</h4>
+            <small class="text-muted">Solusi Konveksi Terpercaya</small>
             <hr>
             <h5 class="fw-bold">${judul}</h5>
         </div>
@@ -193,8 +190,19 @@ function buildDokumenHTML(d) {
             <thead class="table-secondary"><tr><th>Tanggal</th><th>Metode</th><th class="text-end">Jumlah</th></tr></thead>
             <tbody>${bayarRows}</tbody>
         </table>` : ''}
-        <div class="mt-4 text-center text-muted" style="font-size:12px;">
-            Dicetak pada ${d.tanggal_cetak.substring(0,10)} — Sistem Informasi Konveksi
+        <div class="row mt-5">
+            <div class="col-6 text-center">
+                <p class="mb-5">Pelanggan</p>
+                <p>( ${d.nama_pelanggan} )</p>
+            </div>
+            <div class="col-6 text-center">
+                <p class="mb-5">Admin</p>
+                <p>( ........................ )</p>
+            </div>
+        </div>
+        <hr>
+        <div class="text-center text-muted" style="font-size:12px;">
+            Dicetak pada ${d.tanggal_cetak.substring(0,10)} &mdash; 4MINDS CONVECTION
         </div>
     </div>`;
 }

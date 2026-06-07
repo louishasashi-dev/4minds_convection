@@ -10,9 +10,15 @@ if ($_SESSION['role'] !== 'admin') { header('Location: /konveksi/auth/login.php'
     </div>
     <div class="main-content">
 
+        <!--
+            PERBAIKAN: Ganti "col-auto" menjadi "col-12 col-sm-auto"
+            agar di layar kecil select tidak terpotong (jadi full width),
+            dan tambahkan min-width pada select supaya teks option 
+            seperti "Semua Status" tidak keluar dari kotak.
+        -->
         <div class="row mb-3 g-2">
-            <div class="col-auto">
-                <select id="filterStatus" class="form-select form-select-sm">
+            <div class="col-12 col-sm-auto">
+                <select id="filterStatus" class="form-select form-select-sm" style="min-width: 160px;">
                     <option value="">Semua Status</option>
                     <option value="menunggu">Menunggu</option>
                     <option value="disetujui">Disetujui</option>
@@ -23,31 +29,33 @@ if ($_SESSION['role'] !== 'admin') { header('Location: /konveksi/auth/login.php'
 
         <div class="card">
             <div class="card-body p-0">
-                <table class="table table-hover table-bordered mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>#</th>
-                            <th>Pelanggan</th>
-                            <th>Jenis Pakaian</th>
-                            <th>Jumlah</th>
-                            <th>Ukuran</th>
-                            <th>Catatan</th>
-                            <th>Estimasi</th>
-                            <th>Status</th>
-                            <th>Harga</th>
-                            <th>Tanggal</th>
-                            <th>Desain</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bodyPesan">
-                        <tr>
-                            <td colspan="12" class="text-center py-4">
-                                <div class="spinner-border text-primary"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Pelanggan</th>
+                                <th>Jenis Pakaian</th>
+                                <th>Jumlah</th>
+                                <th>Ukuran</th>
+                                <th>Catatan</th>
+                                <th>Estimasi</th>
+                                <th>Status</th>
+                                <th>Harga</th>
+                                <th>Tanggal</th>
+                                <th>Desain</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyPesan">
+                            <tr>
+                                <td colspan="12" class="text-center py-4">
+                                    <div class="spinner-border text-primary"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -174,7 +182,6 @@ function render() {
             aksi = '<span class="text-muted">-</span>';
         }
 
-        // Tentukan tampilan file desain
         let desainHtml = '-';
         if (p.file_desain) {
             let url = '/konveksi/assets/uploads/' + p.file_desain;

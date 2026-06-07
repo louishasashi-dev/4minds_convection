@@ -20,29 +20,31 @@ if ($_SESSION['role'] !== 'pelanggan') {
 
         <div class="card">
             <div class="card-body p-0">
-                <table class="table table-hover table-bordered mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>#</th>
-                            <th>Transaksi</th>
-                            <th>Jenis</th>
-                            <th>Keterangan</th>
-                            <th>Total Transaksi</th>
-                            <th>Jumlah Bayar</th>
-                            <th>Metode</th>
-                            <th>Status Bayar</th>
-                            <th>Tanggal</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bodyPelunasan">
-                        <tr>
-                            <td colspan="10" class="text-center py-4">
-                                <div class="spinner-border text-primary"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>ID Trx</th>
+                                <th>Jenis</th>
+                                <th>Keterangan</th>
+                                <th>Total Transaksi</th>
+                                <th>Jumlah Bayar</th>
+                                <th>Metode</th>
+                                <th>Status</th>
+                                <th>Tanggal</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyPelunasan">
+                            <tr>
+                                <td colspan="10" class="text-center py-4">
+                                    <div class="spinner-border text-primary"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -135,11 +137,14 @@ $(document).ready(function() {
 });
 
 function getKeterangan(p) {
+    if (p.jenis_pembayaran === 'lunas' || p.jenis_pembayaran === 'cod') {
+        return '<span class="badge bg-primary">Bayar Lunas</span>';
+    }
     if (p.jenis_pembayaran !== 'dp') return '-';
     if (parseInt(p.urutan_bayar) === 1) {
         return '<span class="badge bg-info text-dark">Pembayaran DP 50%</span>';
     } else {
-        return '<span class="badge bg-secondary">Pelunasan sisa DP (50% sebelumnya telah dibayarkan)</span>';
+        return '<span class="badge bg-secondary">Pelunasan sisa DP<br>(50% sebelumnya)</span>';
     }
 }
 

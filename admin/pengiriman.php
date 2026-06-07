@@ -13,9 +13,15 @@ require_once '../config/db.php';
     </div>
     <div class="main-content">
 
+        <!--
+            PERBAIKAN UTAMA: col-auto diganti col-12 col-sm-auto,
+            dan select diberi min-width: 160px.
+            Tanpa min-width, "Semua Status" tidak muat karena form-select-sm
+            punya padding kecil dan browser menghitung lebar dari option terpendek.
+        -->
         <div class="row mb-3 g-2">
-            <div class="col-auto">
-                <select id="filterStatus" class="form-select form-select-sm">
+            <div class="col-12 col-sm-auto">
+                <select id="filterStatus" class="form-select form-select-sm" style="min-width: 160px;">
                     <option value="">Semua Status</option>
                     <option value="belum_dikirim">Belum Dikirim</option>
                     <option value="dikirim">Dikirim</option>
@@ -26,29 +32,32 @@ require_once '../config/db.php';
 
         <div class="card">
             <div class="card-body p-0">
-                <table class="table table-hover table-bordered mb-0">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>#</th>
-                            <th>Pelanggan</th>
-                            <th>Transaksi</th>
-                            <th>Ekspedisi</th>
-                            <th>No Resi</th>
-                            <th>Tgl Kirim</th>
-                            <th>Estimasi</th>
-                            <th>Tgl Tiba</th>
-                            <th>Status</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="bodyPengiriman">
-                        <tr>
-                            <td colspan="10" class="text-center py-4">
-                                <div class="spinner-border text-primary"></div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+                <!-- PERBAIKAN: Tambah table-responsive wrapper -->
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered mb-0">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>#</th>
+                                <th>Pelanggan</th>
+                                <th>Transaksi</th>
+                                <th>Ekspedisi</th>
+                                <th>No Resi</th>
+                                <th>Tgl Kirim</th>
+                                <th>Estimasi</th>
+                                <th>Tgl Tiba</th>
+                                <th>Status</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bodyPengiriman">
+                            <tr>
+                                <td colspan="10" class="text-center py-4">
+                                    <div class="spinner-border text-primary"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
@@ -100,7 +109,6 @@ require_once '../config/db.php';
 let allData = [];
 
 $(document).ready(function() {
-    // Set default tanggal hari ini
     let today = new Date().toISOString().split('T')[0];
     $('#kirim_tgl').val(today);
 
