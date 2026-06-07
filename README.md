@@ -78,6 +78,7 @@ Proyek ini dikembangkan menggunakan PHP Native dengan database MySQL.
 
 ### Halaman Publik
 
+<img width="4122" height="7864" alt="image" src="konveksi/img/index.php_screeshoot.png" />
 
 ### Halaman Login
 
@@ -121,11 +122,8 @@ Proyek ini dikembangkan menggunakan PHP Native dengan database MySQL.
 
 ### Dokumen Transaksi
 
-#### invoice :
 <img width="603" height="671" alt="image" src="https://github.com/user-attachments/assets/3ac2d158-2995-4e0e-a6db-c6375aa6631c" />
-#### kwitansi :
 <img width="604" height="674" alt="image" src="https://github.com/user-attachments/assets/0205be36-fc82-4a46-bc0b-d2e8ecd423ed" />
-#### nota pesanan :
 <img width="599" height="669" alt="image" src="https://github.com/user-attachments/assets/26b77f7b-6492-461c-b1dc-1b748778c766" />
 
 ## 📊 Analisis dan Perancangan Sistem
