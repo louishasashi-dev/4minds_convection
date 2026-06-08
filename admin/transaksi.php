@@ -101,6 +101,12 @@ require_once '../config/db.php';
                     <label>Tanggal Selesai</label>
                     <input type="date" id="tglSelesai" class="form-control">
                 </div>
+                <div class="mb-3">
+                    <label>Ukuran</label>
+                    <select id="pilihUkuran" class="form-select">
+                        <option value="">-- Pilih Ukuran (opsional) --</option>
+                    </select>
+                </div>
                 <hr>
                 <h6>Item Produk</h6>
                 <div id="itemContainer">
@@ -187,6 +193,14 @@ require_once '../config/db.php';
 <script>
 $(document).ready(function() {
     loadTransaksi();
+
+    // Load ukuran dari DB
+    $.get('/konveksi/api/ukuran.php?action=list_ukuran', function(data) {
+        let sel = $('#pilihUkuran');
+        data.forEach(function(u) {
+            sel.append('<option value="' + u.ukuran + '">' + u.ukuran + '</option>');
+        });
+    }, 'json');
 
     function loadTransaksi() {
         $.get('/konveksi/api/transaksi.php?action=list', function(data) {
@@ -275,6 +289,7 @@ $(document).ready(function() {
             jenis_transaksi: $('#pilihJenis').val(),
             jenis_pembayaran: $('#pilihPembayaran').val(),
             tanggal_selesai: $('#tglSelesai').val(),
+            ukuran: $('#pilihUkuran').val(),
             items: JSON.stringify(items)
         }, function(res) {
             if (res.success) {
@@ -292,25 +307,37 @@ function lihatDetail(id) {
     $.get('/konveksi/api/transaksi.php?action=detail&id=' + id, function(data) {
         let html = '';
 
-        // Jika jahit satuan — tampilkan info kustom
-        if (data.info) {
+        // Header info umum transaksi
+        html += `<table class="table table-sm table-bordered mb-3">
+            <tr><th>Pelanggan</th><td>${data.nama_pelanggan}</td></tr>
+            <tr><th>Jenis</th><td>${data.jenis_transaksi.replace(/_/g,' ')}</td></tr>
+            <tr><th>Ukuran</th><td>${data.ukuran || '-'}</td></tr>
+            <tr><th>Pembayaran</th><td>${data.jenis_pembayaran}</td></tr>
+            <tr><th>Status</th><td>${data.status}</td></tr>
+            <tr><th>Tanggal</th><td>${data.tanggal_transaksi ? data.tanggal_transaksi.substring(0,10) : '-'}</td></tr>
+            <tr><th>Total</th><td><strong>Rp ${parseInt(data.total_harga).toLocaleString('id-ID')}</strong></td></tr>
+        </table>`;
+
+        // Jika jahit satuan — tampilkan info dari pesan_jahit
+        if (data.jenis_transaksi === 'jahit_satuan') {
+            let pj = data.pesan_jahit || {};
             html += `<div class="alert alert-info mb-3">
-                <strong>✂️ Pesanan Jahit Satuan</strong><br>
-                <strong>Jenis Pakaian:</strong> ${data.info.jenis_pakaian || '-'}<br>
-                <strong>Ukuran:</strong> ${data.info.ukuran || '-'}<br>
-                <strong>Catatan:</strong> ${data.info.catatan || '-'}<br>
-                <strong>Estimasi Selesai:</strong> ${data.info.tanggal_selesai ? data.info.tanggal_selesai.substring(0,10) : '-'}<br>
-                <strong>Jumlah:</strong> ${data.info.jumlah} pcs<br>
-                <span class="text-warning fw-bold">⏳ Harga akan dikonfirmasi oleh admin.</span>
+                <strong>✂️ Detail Pesanan Jahit Satuan</strong><br>
+                <strong>Jenis Pakaian:</strong> ${pj.jenis_pakaian || '-'}<br>
+                <strong>Ukuran:</strong> ${pj.ukuran || data.ukuran || '-'}<br>
+                <strong>Jumlah:</strong> ${pj.jumlah || '-'} pcs<br>
+                <strong>Catatan:</strong> ${pj.catatan || data.deskripsi || '-'}<br>
+                <strong>Estimasi Selesai:</strong> ${data.tanggal_selesai ? data.tanggal_selesai.substring(0,10) : '-'}
             </div>`;
         }
 
-        // Tabel produk
-        let items = data.items || data;
+        // Tabel item produk (untuk pakaian jadi & konveksi, atau jahit satuan yang sudah ada produknya)
+        let items = data.items || [];
         let adaProduk = items.length > 0 && items[0].nama_produk;
         if (adaProduk) {
+            html += '<h6 class="fw-bold">Item Produk</h6>';
             html +=
-                '<table class="table table-sm"><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead><tbody>';
+                '<table class="table table-sm table-bordered"><thead><tr><th>Produk</th><th>Qty</th><th>Harga</th><th>Subtotal</th></tr></thead><tbody>';
             items.forEach(d => {
                 html += `<tr>
                     <td>${d.nama_produk}</td>

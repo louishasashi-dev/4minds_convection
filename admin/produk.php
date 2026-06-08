@@ -33,7 +33,6 @@ $ukuran_list = $conn->query("SELECT * FROM ukuran_model ORDER BY jenis");
             <div class="col-md-3">
                 <select id="filterJenis" class="form-select form-select-sm">
                     <option value="">Semua Jenis</option>
-                    <option value="jahit_satuan">Jahit Satuan</option>
                     <option value="pakaian_jadi">Pakaian Jadi</option>
                     <option value="konveksi">Konveksi</option>
                 </select>

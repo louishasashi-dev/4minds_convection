@@ -94,8 +94,8 @@ switch ($action) {
 
             // Buat transaksi
             $conn->query("INSERT INTO transaksi 
-                (id_pelanggan, jenis_transaksi, total_harga, diskon_total, jenis_pembayaran, tanggal_selesai, catatan_kustom, ukuran_kustom, jenis_pakaian_kustom, status)
-                VALUES ($id_pelanggan, 'jahit_satuan', $harga, 0, '$jp', $estimasi, '$catatan', '$ukuran', '$jenis_pakaian', 'pending')");
+                (id_pelanggan, jenis_transaksi, total_harga, diskon_total, jenis_pembayaran, tanggal_selesai, deskripsi, ukuran, status)
+                VALUES ($id_pelanggan, 'jahit_satuan', $harga, 0, '$jp', $estimasi, '$catatan', '$ukuran', 'pending')");
             $id_transaksi = $conn->insert_id;
 
             // Buat detail dummy

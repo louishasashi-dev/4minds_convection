@@ -31,8 +31,11 @@ if ($_SESSION['role'] !== 'pelanggan') { header('Location: /konveksi/auth/login.
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Ukuran / Referensi</label>
-                            <input type="text" id="ukuran" class="form-control"
-                                placeholder="Contoh: L, XL, atau ukuran dada 100cm">
+                            <select id="ukuran" class="form-select">
+                                <option value="">-- Pilih Ukuran --</option>
+                            </select>
+                            <small class="text-muted">Pilih ukuran standar, atau tulis di catatan jika ukuran
+                                khusus</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Jumlah Pcs <span class="text-danger">*</span></label>
@@ -130,6 +133,14 @@ $('#file_desain').on('change', function() {
 });
 
 $(document).ready(function() {
+    // Load ukuran dari DB
+    $.get('/konveksi/api/ukuran.php?action=list_ukuran', function(data) {
+        let sel = $('#ukuran');
+        data.forEach(function(u) {
+            sel.append('<option value="' + u.ukuran + '">' + u.ukuran + '</option>');
+        });
+    }, 'json');
+
     loadRiwayat();
 });
 

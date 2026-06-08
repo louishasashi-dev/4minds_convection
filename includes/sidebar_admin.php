@@ -12,6 +12,8 @@
     <div class="px-3 pt-2 pb-1 text-secondary" style="font-size:.75rem">TRANSAKSI</div>
     <a href="/konveksi/admin/pesan_admin.php" id="linkPesanAdmin"><i class="bi bi-envelope"></i> Pesan Jahit Satuan
         <span id="badgePesan" class="badge bg-danger ms-1 d-none">0</span></a>
+    <a href="/konveksi/admin/jasa_konveksi.php" id="linkJasaKonveksi"><i class="bi bi-building"></i> Jasa Konveksi
+        <span id="badgeKonveksi" class="badge bg-danger ms-1 d-none">0</span></a>
     <a href="/konveksi/admin/transaksi.php"><i class="bi bi-cart3"></i> Transaksi</a>
     <a href="/konveksi/admin/pelunasan.php"><i class="bi bi-cash-coin"></i> Pelunasan</a>
     <a href="/konveksi/admin/pengiriman.php"><i class="bi bi-truck"></i> Pengiriman</a>

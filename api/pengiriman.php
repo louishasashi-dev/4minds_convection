@@ -2,15 +2,21 @@
 session_start();
 require_once '../config/db.php';
 header('Content-Type: application/json');
-if (!isset($_SESSION['user_id'])) { echo json_encode(['error' => 'Unauthorized']); exit; }
+
+if (!isset($_SESSION['user_id'])) { 
+    echo json_encode(['error' => 'Unauthorized']); 
+    exit; 
+}
 
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
 
 switch ($action) {
     case 'list':
         $role = $_SESSION['role'];
+        
         if ($role === 'admin') {
-            $sql = "SELECT pg.*, t.jenis_transaksi, t.status as status_transaksi, t.jenis_pembayaran, p.name as nama_pelanggan
+            $sql = "SELECT pg.*, t.jenis_transaksi, t.status as status_transaksi, t.jenis_pembayaran, p.name as nama_pelanggan,
+                           (SELECT status FROM pembayaran WHERE id_transaksi = t.id_transaksi ORDER BY id_pembayaran DESC LIMIT 1) as status_pembayaran
                     FROM pengiriman pg
                     JOIN transaksi t ON pg.id_transaksi = t.id_transaksi
                     JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
@@ -20,7 +26,8 @@ switch ($action) {
                     SELECT NULL, t.id_transaksi, NULL,
                            NULL, NULL, NULL,
                            NULL, NULL, 'belum_dikirim',
-                           t.jenis_transaksi, t.status as status_transaksi, t.jenis_pembayaran, p.name as nama_pelanggan
+                           t.jenis_transaksi, t.status as status_transaksi, t.jenis_pembayaran, p.name as nama_pelanggan,
+                           (SELECT status FROM pembayaran WHERE id_transaksi = t.id_transaksi ORDER BY id_pembayaran DESC LIMIT 1) as status_pembayaran
                     FROM transaksi t
                     JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
                     WHERE t.status IN ('lunas','diproses','selesai','dikirim','sampai')
@@ -29,22 +36,45 @@ switch ($action) {
 
                     ORDER BY tanggal_kirim DESC";
         } else {
-            $id = $_SESSION['user_id'];
-            $sql = "SELECT pg.*, t.jenis_transaksi, t.status as status_transaksi, t.jenis_pembayaran, p.name as nama_pelanggan
+            // Untuk pelanggan
+            $id_pelanggan = intval($_SESSION['user_id']);
+            $sql = "SELECT pg.*, t.jenis_transaksi, t.status as status_transaksi, t.jenis_pembayaran, p.name as nama_pelanggan,
+                           (SELECT status FROM pembayaran WHERE id_transaksi = t.id_transaksi ORDER BY id_pembayaran DESC LIMIT 1) as status_pembayaran
                     FROM pengiriman pg
                     JOIN transaksi t ON pg.id_transaksi = t.id_transaksi
                     JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
-                    WHERE t.id_pelanggan = $id
-                    ORDER BY pg.tanggal_kirim DESC";
+                    WHERE t.id_pelanggan = $id_pelanggan
+                    
+                    UNION
+                    
+                    SELECT NULL, t.id_transaksi, NULL,
+                           NULL, NULL, NULL,
+                           NULL, NULL, 'belum_dikirim',
+                           t.jenis_transaksi, t.status as status_transaksi, t.jenis_pembayaran, p.name as nama_pelanggan,
+                           (SELECT status FROM pembayaran WHERE id_transaksi = t.id_transaksi ORDER BY id_pembayaran DESC LIMIT 1) as status_pembayaran
+                    FROM transaksi t
+                    JOIN pelanggan p ON t.id_pelanggan = p.id_pelanggan
+                    WHERE t.id_pelanggan = $id_pelanggan
+                    AND t.status IN ('lunas','diproses','selesai','dikirim','sampai')
+                    AND t.jenis_transaksi != 'jahit_satuan'
+                    AND t.id_transaksi NOT IN (SELECT id_transaksi FROM pengiriman)
+                    
+                    ORDER BY tanggal_kirim DESC";
         }
+        
         $res = $conn->query($sql);
         $data = [];
-        while ($r = $res->fetch_assoc()) $data[] = $r;
+        while ($r = $res->fetch_assoc()) {
+            $data[] = $r;
+        }
         echo json_encode($data);
         break;
 
     case 'proses':
-        if ($_SESSION['role'] !== 'admin') { echo json_encode(['error' => 'Forbidden']); break; }
+        if ($_SESSION['role'] !== 'admin') { 
+            echo json_encode(['error' => 'Forbidden']); 
+            break; 
+        }
         $id_transaksi = intval($_POST['id_transaksi']);
         $id_admin     = $_SESSION['user_id'];
         $kurir        = $conn->real_escape_string($_POST['kurir']);
@@ -63,18 +93,23 @@ switch ($action) {
         break;
 
     case 'sampai':
-        if ($_SESSION['role'] !== 'admin') { echo json_encode(['error' => 'Forbidden']); break; }
+        if ($_SESSION['role'] !== 'admin') { 
+            echo json_encode(['error' => 'Forbidden']); 
+            break; 
+        }
         $id_transaksi = intval($_POST['id_transaksi']);
         $tgl_tiba     = date('Y-m-d');
+        
+        // Update status pengiriman menjadi sampai
         $conn->query("UPDATE pengiriman SET status='sampai', tanggal_tiba='$tgl_tiba' WHERE id_transaksi=$id_transaksi");
-        // Update status transaksi juga, kecuali sudah lunas/selesai
-        $trx = $conn->query("SELECT status FROM transaksi WHERE id_transaksi=$id_transaksi")->fetch_assoc();
-        if ($trx && !in_array($trx['status'], ['lunas', 'selesai'])) {
-            $conn->query("UPDATE transaksi SET status='sampai' WHERE id_transaksi=$id_transaksi");
-        }
+        
+        // Update status transaksi menjadi selesai
+        $conn->query("UPDATE transaksi SET status='selesai', tanggal_selesai='$tgl_tiba' WHERE id_transaksi=$id_transaksi");
+        
         echo json_encode(['success' => true]);
         break;
 
     default:
         echo json_encode(['error' => 'Action tidak dikenal']);
 }
+?>

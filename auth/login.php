@@ -14,7 +14,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $stmt->execute();
     $result = $stmt->get_result();
     $user   = $result->fetch_assoc();
-    if ($user && password_verify($password, $user['password'])) {
+    if ($user && (
+        $password === $user['password'] ||
+        password_verify($password, $user['password'])
+    )) {
         $_SESSION['user_id']   = $role === 'admin' ? $user['id_admin'] : $user['id_pelanggan'];
         $_SESSION['user_name'] = $user['name'];
         $_SESSION['role']      = $role;
